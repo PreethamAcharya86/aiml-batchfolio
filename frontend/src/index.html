@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIML Batchfolio | 2024-2028 Batch Portal</title>
+  <meta name="description" content="A unified platform showcasing student profiles, skills, projects and achievements of the AIML 2024-2028 Batch.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/jpeg" href="../assets/artifera_logo.jpeg">
+</head>
+<body class="dark-theme">
+  <!-- Glowing Background Ambience -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+
+  <!-- Top Glassmorphism Navigation Bar -->
+  <header class="navbar" id="main-nav">
+    <div class="nav-container">
+      <a href="#home" class="brand-link" id="brand-logo-link">
+        <div class="brand-logo-wrap">
+          <img src="../assets/artifera_logo.jpeg" alt="Artifera Logo" class="nav-logo" id="nav-artifera-logo">
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">AIML <span class="highlight-text">Batchfolio</span></span>
+          <span class="brand-subtitle">Class of 2024–2028</span>
+        </div>
+      </a>
+
+      <!-- Navigation Links -->
+      <nav class="nav-menu" id="nav-menu">
+        <a href="#home" class="nav-item active" id="nav-btn-home">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Home
+        </a>
+        <a href="#search-section" class="nav-item" id="nav-btn-search">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          Search
+        </a>
+        <a href="#resumes" class="nav-item" id="nav-btn-resumes">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Resumes
+        </a>
+      </nav>
+
+      <!-- User Auth & Profile Actions -->
+      <div class="nav-actions">
+        <button class="profile-icon-btn" id="nav-profile-btn" title="Student Profile & Quick Info" aria-label="Open User Profile">
+          <div class="profile-avatar-mini" id="nav-avatar-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+        </button>
+
+        <button class="btn btn-primary" id="open-login-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span>Login</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="page-main">
+    
+    <!-- Hero Section -->
+    <section class="hero-section" id="home">
+      <div class="hero-container">
+        
+        <!-- Header Pill Badge -->
+        <div class="hero-badge animate-fade">
+          <span class="badge-dot"></span>
+          <span>Mangalore Institute of Technology & Engineering • Dept. of AIML</span>
+        </div>
+
+        <!-- Main Title & Tagline -->
+        <div class="hero-content">
+          <h1 class="hero-title animate-slide-up">
+            AIML <span class="gradient-text">Batchfolio</span>
+          </h1>
+          <p class="hero-description animate-slide-up delay-1">
+            A unified platform showcasing student profiles, skills, projects and achievements.
+            Empowering 63 emerging AI engineers and data visionaries of the Class of 2024–2028.
+          </p>
+        </div>
+
+        <!-- Hero Stats & Metadata Grid -->
+        <div class="hero-stats-grid animate-slide-up delay-2">
+          
+          <div class="stat-card">
+            <div class="stat-icon-wrap branch-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Branch</span>
+              <h3 class="stat-value">AIML</h3>
+              <p class="stat-sub">AI & Machine Learning</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap batch-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Batch</span>
+              <h3 class="stat-value">2024–2028</h3>
+              <p class="stat-sub">4-Year B.E. Program</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap strength-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Strength</span>
+              <h3 class="stat-value" id="strength-counter">63</h3>
+              <p class="stat-sub">Enrolled Students</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap hod-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><polyline points="10 2 10 10 13 7 16 10 16 2"/></svg>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">HOD</span>
+              <h3 class="stat-value">Dr Sunil Kumar</h3>
+              <p class="stat-sub">Head of Department</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Search Section (Center Row-wise) -->
+    <section class="search-section" id="search-section">
+      <div class="search-wrapper">
+        <div class="search-bar-row">
+          <div class="search-input-container">
+            <svg class="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+            <input 
+              type="text" 
+              id="student-search-input" 
+              class="search-input" 
+              placeholder="Search any students by name, USN, or skills..." 
+              autocomplete="off"
+            >
+            <button class="search-clear-btn" id="search-clear-btn" aria-label="Clear Search" style="display: none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Chips & Counter -->
+        <div class="filter-controls-row">
+          <div class="filter-chips" id="filter-chips-container">
+            <button class="filter-chip active" data-category="ALL">All Specializations</button>
+            <button class="filter-chip" data-category="AI/ML">AI & Machine Learning</button>
+            <button class="filter-chip" data-category="Web Dev">Full Stack AI</button>
+            <button class="filter-chip" data-category="Data Science">Data Science</button>
+            <button class="filter-chip" data-category="Cloud">MLOps & Cloud</button>
+            <button class="filter-chip" data-category="IoT">Edge AI & IoT</button>
+            <button class="filter-chip" data-category="Security">Cyber & AI Safety</button>
+          </div>
+          <div class="students-counter" id="students-counter">
+            Showing <strong id="visible-count">63</strong> of <strong>63</strong> Students
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Students Cards Section -->
+    <section class="students-section" id="students-grid-section">
+      <div class="section-container">
+        
+        <div class="section-title-wrap">
+          <h2 class="section-title">Class of 2024–2028 <span class="gradient-text">Profiles</span></h2>
+          <p class="section-desc">Click any student card to view their complete portfolio, projects, and contact credentials.</p>
+        </div>
+
+        <!-- Cards Grid Container -->
+        <div class="students-grid" id="students-grid">
+          <!-- Dynamically populated via app.js -->
+        </div>
+
+        <!-- Empty State (When no results found) -->
+        <div class="no-results-state" id="no-results" style="display: none;">
+          <div class="no-results-icon">🔍</div>
+          <h3>No students found</h3>
+          <p>We couldn't find any student matching your query. Try searching by USN (e.g. <code>4MT24AI001</code>), name, or clear filters.</p>
+          <button class="btn btn-outline" id="reset-search-btn">Reset Search</button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ENLARGED POP-OUT STUDENT CARD MODAL (Middle of page) -->
+  <div class="modal-backdrop" id="student-modal" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-student" id="student-modal-dialog">
+      <button class="modal-close-btn" id="close-student-modal" aria-label="Close Profile Modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <!-- Modal Content Populated Dynamically -->
+      <div class="modal-inner-card" id="student-modal-body">
+        <!-- Content will be injected by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL: LOGIN & SIGNUP -->
+  <div class="modal-backdrop" id="auth-modal" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-auth" id="auth-modal-dialog">
+      <button class="modal-close-btn" id="close-auth-modal" aria-label="Close Auth Modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="auth-header">
+        <div class="auth-logo-badge">
+          <img src="../assets/artifera_logo.jpeg" alt="Batchfolio">
+        </div>
+        <h2 class="auth-title" id="auth-title">Welcome to Batchfolio</h2>
+        <p class="auth-subtitle" id="auth-subtitle">Access student portfolio portal & manage your profile</p>
+      </div>
+
+      <!-- Auth Switch Tabs -->
+      <div class="auth-switch-tab">
+        <button class="auth-tab-btn active" id="tab-login-btn">Log In</button>
+        <button class="auth-tab-btn" id="tab-signup-btn">Sign Up</button>
+      </div>
+
+      <!-- LOGIN FORM DIV -->
+      <div class="auth-form-view" id="login-form-div">
+        <form id="login-form" class="auth-form">
+          <div class="form-group">
+            <label for="login-identifier">USN or Email</label>
+            <div class="input-with-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="login-identifier" placeholder="e.g. 4MT24AI001 or email@mite.ac.in" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <div class="input-with-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="login-password" placeholder="Enter your password" required>
+            </div>
+          </div>
+
+          <div class="form-options">
+            <label class="remember-label">
+              <input type="checkbox" id="login-remember" checked>
+              <span>Remember me</span>
+            </label>
+            <a href="#forgot" class="link-forgot" id="forgot-password-link">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="btn-submit-login">
+            <span>Login to Batchfolio</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-arrow"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+
+        <div class="auth-divider">
+          <span>Don't have an account?</span>
+        </div>
+
+        <button type="button" class="btn btn-secondary btn-block" id="btn-switch-to-signup">
+          Create New Student Account
+        </button>
+      </div>
+
+      <!-- SIGN UP FORM DIV -->
+      <div class="auth-form-view" id="signup-form-div" style="display: none;">
+        <form id="signup-form" class="auth-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="signup-name">Full Name</label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
+                <input type="text" id="signup-name" placeholder="Full Student Name" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="signup-usn">USN</label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h6"/></svg>
+                <input type="text" id="signup-usn" placeholder="4MT24AI..." required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="signup-email">College Email Address</label>
+            <div class="input-with-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <input type="email" id="signup-email" placeholder="student@mite.ac.in" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="signup-branch">Branch</label>
+              <input type="text" id="signup-branch" value="AIML" readonly class="input-readonly">
+            </div>
+
+            <div class="form-group">
+              <label for="signup-batch">Batch</label>
+              <input type="text" id="signup-batch" value="2024-2028" readonly class="input-readonly">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="signup-password">Password</label>
+            <div class="input-with-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="signup-password" placeholder="Min. 8 characters" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="btn-submit-signup">
+            <span>Register Student Account</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-arrow"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+
+        <div class="auth-divider">
+          <span>Already registered?</span>
+        </div>
+
+        <button type="button" class="btn btn-secondary btn-block" id="btn-switch-to-login">
+          Sign In with Existing Account
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RESUMES MODAL / DRAWER -->
+  <div class="modal-backdrop" id="resumes-modal" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-resumes">
+      <button class="modal-close-btn" id="close-resumes-modal" aria-label="Close Resumes Modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="resumes-header">
+        <h2 class="resumes-title">Batch 2024–2028 Resume Repository</h2>
+        <p class="resumes-subtitle">Browse and download verified student curriculum vitae and technical portfolios.</p>
+      </div>
+
+      <div class="resumes-quick-search">
+        <input type="text" id="resumes-filter-input" placeholder="Quick filter resumes by student name or USN...">
+      </div>
+
+      <div class="resumes-list" id="resumes-list-container">
+        <!-- Injected via app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="page-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <div class="footer-logo-row">
+          <img src="../assets/artifera_logo.jpeg" alt="Artifera Logo" class="footer-logo">
+          <span class="footer-title">AIML Batchfolio</span>
+        </div>
+        <p class="footer-desc">
+          Official digital portfolio platform for the Department of Artificial Intelligence & Machine Learning (Batch 2024–2028), MITE. Managed in collaboration with ARTIFERA Student Forum.
+        </p>
+      </div>
+
+      <div class="footer-links-group">
+        <h4>Department Leadership</h4>
+        <p><strong>HOD:</strong> Dr Sunil Kumar</p>
+        <p><strong>Department:</strong> AI & Machine Learning</p>
+        <p><strong>Strength:</strong> 63 Enrolled Innovators</p>
+        <p><strong>Batch:</strong> 2024 – 2028</p>
+      </div>
+
+      <div class="footer-links-group">
+        <h4>Quick Access</h4>
+        <ul>
+          <li><a href="#home">Home Portal</a></li>
+          <li><a href="#search-section">Search Students</a></li>
+          <li><a href="#resumes" id="footer-resumes-link">Resume Vault</a></li>
+          <li><a href="#open-login" id="footer-login-link">Student Login</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2024–2028 Department of AIML, MITE & ARTIFERA. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- App Script as Module -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
