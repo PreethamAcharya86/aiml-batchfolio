@@ -1344,11 +1344,7 @@ h1, h2, h3, h4, h5, h6 {
   height: 20px;
 }
 
-/* ==========================================================================
-   AUTH MODAL (LOGIN & SIGN UP)
-   Requirement: "When clik on login btton show a div for login and add button
-   to signup in below and crate div for that one"
-   ========================================================================== */
+/* Login modal */
 .modal-auth {
   max-width: 480px;
   padding: 2.25rem;
@@ -1385,36 +1381,6 @@ h1, h2, h3, h4, h5, h6 {
 .auth-subtitle {
   font-size: 0.88rem;
   color: var(--text-muted);
-}
-
-/* Switch Tabs */
-.auth-switch-tab {
-  display: flex;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  padding: 0.3rem;
-  margin-bottom: 1.5rem;
-}
-
-.auth-tab-btn {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 0.6rem;
-  border-radius: 9px;
-  cursor: pointer;
-  transition: var(--transition-smooth);
-}
-
-.auth-tab-btn.active {
-  background: var(--primary);
-  color: #ffffff;
-  box-shadow: 0 4px 12px var(--primary-glow);
 }
 
 /* Form Styles */
@@ -1477,6 +1443,11 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-dim);
 }
 
+.login-error {
+  color: #fca5a5;
+  font-size: 0.85rem;
+}
+
 .input-readonly {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -1492,51 +1463,6 @@ h1, h2, h3, h4, h5, h6 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.85rem;
-}
-
-.form-options {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.82rem;
-}
-
-.remember-label {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.link-forgot {
-  color: var(--secondary);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.link-forgot:hover {
-  text-decoration: underline;
-}
-
-.auth-divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 1.5rem 0 1rem;
-  color: var(--text-dim);
-  font-size: 0.82rem;
-}
-
-.auth-divider::before,
-.auth-divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.auth-divider span {
-  padding: 0 0.75rem;
 }
 
 /* ==========================================================================

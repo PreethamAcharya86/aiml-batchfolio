@@ -2,24 +2,16 @@
 AIML Batchfolio — Pydantic Schemas
 Request/Response models for all API routes.
 """
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import date
 
 
 # ── Auth Schemas ──────────────────────────────────────────────────────────────
 
-class SignupRequest(BaseModel):
-    name: str = Field(..., min_length=2, max_length=100)
-    usn: str = Field(..., min_length=10, max_length=15, pattern=r"^[0-9A-Za-z]+$")
-    email: EmailStr
-    dob: date  # Required — password is derived as DDMMYYYY
-    phone_no: Optional[str] = None
-    dept: str = "AIML"
-
 class LoginRequest(BaseModel):
-    identifier: str    # USN or email
-    password: str
+    usn: str = Field(..., min_length=1, max_length=20)
+    password: str = Field(..., pattern=r"^\d{8}$")
 
 class TokenResponse(BaseModel):
     access_token: str

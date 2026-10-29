@@ -1,26 +1,11 @@
-"""
-AIML Batchfolio — Auth & DB Utilities
-JWT creation/verification, password hashing, and Supabase Auth helpers.
-"""
+"""AIML Batchfolio JWT creation and verification."""
 import jwt
 from datetime import datetime, timedelta, timezone
-from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from config import supabase, JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRE_HOURS
+from config import JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRE_HOURS
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 bearer_scheme = HTTPBearer(auto_error=False)
-
-
-# ── Password helpers ───────────────────────────────────────────────────────────
-
-def hash_password(plain: str) -> str:
-    return pwd_context.hash(plain)
-
-def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
-
 
 # ── JWT helpers ────────────────────────────────────────────────────────────────
 
@@ -49,36 +34,3 @@ def get_current_student(
             detail="Authentication required",
         )
     return decode_token(credentials.credentials)
-
-
-# ── Supabase Auth: register a new user ────────────────────────────────────────
-
-def supabase_create_user(email: str, password: str) -> str:
-    """
-    Creates a user in Supabase Auth and returns their UUID.
-    Uses the admin API (service role key) so no email confirmation is needed.
-    """
-    res = supabase.auth.admin.create_user({
-        "email": email,
-        "password": password,
-        "email_confirm": True,
-    })
-    if not res.user:
-        raise HTTPException(status_code=400, detail="Failed to create Supabase auth user")
-    return str(res.user.id)
-
-
-# ── Supabase Auth: sign in (returns Supabase session) ─────────────────────────
-
-def supabase_sign_in(email: str, password: str):
-    """
-    Signs in via Supabase Auth. Returns the session.
-    Raises HTTPException on bad credentials.
-    """
-    try:
-        res = supabase.auth.sign_in_with_password({"email": email, "password": password})
-        if not res.session:
-            raise HTTPException(status_code=401, detail="Invalid credentials")
-        return res
-    except Exception as exc:
-        raise HTTPException(status_code=401, detail=f"Login failed: {str(exc)}")

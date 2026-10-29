@@ -51,19 +51,12 @@ function normalizeStudent(row) {
     email:    row.email,
     branch:   row.dept || 'AIML',
     batch:    '2024-2028',
-    year:     row.year,
     avatar:   row.profile_picture_url || avatarFallback,
-    role:     'AIML Scholar',
-    category: 'AI/ML',
-    skills:   ['Python', 'Machine Learning', 'Deep Learning', 'Data Science'],
-    bio:      `${row.name} is an AIML scholar at MITE (Batch 2024-2028, ${row.usn}), actively building expertise in Artificial Intelligence and Machine Learning under the mentorship of HOD Dr. Sunil Kumar and the ARTIFERA student forum.`,
-    projects: [
-      {
-        title: 'AI Research Initiative',
-        description: 'End-to-end machine learning pipeline designed for real-world intelligent inference.',
-        tech: ['Python', 'TensorFlow', 'FastAPI'],
-      },
-    ],
+    role:     `${row.dept || 'Student'} Student`,
+    category: row.dept === 'AIML' ? 'AI/ML' : row.dept,
+    skills:   Array.isArray(row.skills) ? row.skills : [],
+    bio:      row.bio || 'No bio has been added yet.',
+    projects: [],
     social: {
       github:    row.github_url    || null,
       linkedin:  row.linkedin_url  || null,
@@ -114,33 +107,17 @@ export const ApiService = {
 
   /**
    * POST /api/auth/login
-   * identifier: USN or email
-   * password: DDMMYYYY (derived from DOB)
+   * USN and DOB in DDMMYYYY format.
    */
-  async login({ identifier, password }) {
+  async login({ usn, password }) {
     const res = await apiFetch('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ identifier, password }),
+      body: JSON.stringify({ usn, password }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Login failed');
     if (data.access_token) saveToken(data.access_token);
     return { success: true, ...data };
-  },
-
-  /**
-   * POST /api/auth/signup
-   * Password is NOT sent — the backend derives it from dob (DDMMYYYY).
-   */
-  async signup({ name, usn, email, dob, phone_no, year, branch = 'AIML' }) {
-    const res = await apiFetch('/auth/signup', {
-      method: 'POST',
-      body: JSON.stringify({ name, usn, email, dob, phone_no, year, dept: branch }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'Signup failed');
-    if (data.access_token) saveToken(data.access_token);
-    return { success: true, message: 'Account registered on AIML Batchfolio!', ...data };
   },
 
   /** PUT /api/students/{usn} — Edit own profile (JWT required) */

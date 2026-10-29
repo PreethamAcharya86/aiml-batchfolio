@@ -10,7 +10,6 @@ class BatchfolioApp {
     this.filteredStudents = [];
     this.currentCategory = 'ALL';
     this.searchQuery = '';
-    this.currentUser = null;
 
     // DOM Elements
     this.studentsGrid = document.getElementById('students-grid');
@@ -18,6 +17,9 @@ class BatchfolioApp {
     this.searchClearBtn = document.getElementById('search-clear-btn');
     this.filterChipsContainer = document.getElementById('filter-chips-container');
     this.visibleCountEl = document.getElementById('visible-count');
+    this.totalCountEl = document.getElementById('total-count');
+    this.strengthCounterEl = document.getElementById('strength-counter');
+    this.footerStrengthEl = document.getElementById('footer-strength');
     this.noResultsEl = document.getElementById('no-results');
     this.resetSearchBtn = document.getElementById('reset-search-btn');
 
@@ -25,24 +27,6 @@ class BatchfolioApp {
     this.studentModal = document.getElementById('student-modal');
     this.studentModalBody = document.getElementById('student-modal-body');
     this.closeStudentModalBtn = document.getElementById('close-student-modal');
-
-    this.authModal = document.getElementById('auth-modal');
-    this.closeAuthModalBtn = document.getElementById('close-auth-modal');
-    this.openLoginBtn = document.getElementById('open-login-btn');
-    this.footerLoginLink = document.getElementById('footer-login-link');
-    this.navProfileBtn = document.getElementById('nav-profile-btn');
-
-    // Auth Forms & Tabs
-    this.loginFormDiv = document.getElementById('login-form-div');
-    this.signupFormDiv = document.getElementById('signup-form-div');
-    this.tabLoginBtn = document.getElementById('tab-login-btn');
-    this.tabSignupBtn = document.getElementById('tab-signup-btn');
-    this.btnSwitchToSignup = document.getElementById('btn-switch-to-signup');
-    this.btnSwitchToLogin = document.getElementById('btn-switch-to-login');
-    this.authTitle = document.getElementById('auth-title');
-    this.authSubtitle = document.getElementById('auth-subtitle');
-    this.loginForm = document.getElementById('login-form');
-    this.signupForm = document.getElementById('signup-form');
 
     // Resumes Modal
     this.resumesModal = document.getElementById('resumes-modal');
@@ -76,13 +60,16 @@ class BatchfolioApp {
     try {
       this.students = await ApiService.getStudents();
       this.filteredStudents = [...this.students];
+      this.totalCountEl.textContent = this.students.length;
+      this.strengthCounterEl.textContent = this.students.length;
+      this.footerStrengthEl.textContent = this.students.length;
 
       if (this.students.length === 0) {
         this.studentsGrid.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
             <div style="font-size: 2.5rem; margin-bottom: 1rem;">🎓</div>
             <h3 style="font-size: 1.5rem; color: #f1f5f9; margin-bottom: 0.5rem;">No Students Yet</h3>
-            <p style="color: #94a3b8; font-size: 0.95rem;">The database is empty. Run <code style="color:#67e8f9;">seed.py</code> to insert demo records, or sign up students via the Login button.</p>
+            <p style="color: #94a3b8; font-size: 0.95rem;">No student records are available yet.</p>
           </div>
         `;
         return;
@@ -154,47 +141,6 @@ class BatchfolioApp {
       if (e.target === this.studentModal) this.closeModal(this.studentModal);
     });
 
-    // Auth Modal Triggers
-    this.openLoginBtn.addEventListener('click', () => this.openAuthModal('login'));
-    if (this.footerLoginLink) {
-      this.footerLoginLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.openAuthModal('login');
-      });
-    }
-
-    this.navProfileBtn.addEventListener('click', () => {
-      if (this.currentUser) {
-        this.showToast(`Logged in as ${this.currentUser.name} (${this.currentUser.identifier})`, 'info');
-      } else {
-        this.openAuthModal('login');
-      }
-    });
-
-    // Auth Modal Close handlers
-    this.closeAuthModalBtn.addEventListener('click', () => this.closeModal(this.authModal));
-    this.authModal.addEventListener('click', (e) => {
-      if (e.target === this.authModal) this.closeModal(this.authModal);
-    });
-
-    // Auth Switching Tabs
-    this.tabLoginBtn.addEventListener('click', () => this.switchAuthView('login'));
-    this.tabSignupBtn.addEventListener('click', () => this.switchAuthView('signup'));
-    this.btnSwitchToSignup.addEventListener('click', () => this.switchAuthView('signup'));
-    this.btnSwitchToLogin.addEventListener('click', () => this.switchAuthView('login'));
-
-    // Auth Form Submissions
-    this.loginForm.addEventListener('submit', (e) => this.handleLogin(e));
-    this.signupForm.addEventListener('submit', (e) => this.handleSignup(e));
-
-    const forgotLink = document.getElementById('forgot-password-link');
-    if (forgotLink) {
-      forgotLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.showToast('Default password is your DOB in DDMMYYYY format (e.g. 23112006 for 23/11/2006).', 'info');
-      });
-    }
-
     // Resumes Modal Triggers
     this.navResumesBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -218,7 +164,6 @@ class BatchfolioApp {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         this.closeModal(this.studentModal);
-        this.closeModal(this.authModal);
         this.closeModal(this.resumesModal);
       }
     });
@@ -267,6 +212,7 @@ class BatchfolioApp {
    */
   renderStudents() {
     this.visibleCountEl.textContent = this.filteredStudents.length;
+    this.totalCountEl.textContent = this.students.length;
 
     if (this.filteredStudents.length === 0) {
       this.studentsGrid.innerHTML = '';
@@ -384,8 +330,6 @@ class BatchfolioApp {
         </div>
         <div class="enlarged-skills-cloud">
           ${student.skills.map(skill => `<span class="enlarged-skill-item">${skill}</span>`).join('')}
-          <span class="enlarged-skill-item">Git & GitHub</span>
-          <span class="enlarged-skill-item">Problem Solving</span>
         </div>
       </div>
 
@@ -396,7 +340,7 @@ class BatchfolioApp {
           Featured Academic & Industry Projects
         </div>
         <div class="modal-projects-grid">
-          ${student.projects.map(proj => `
+          ${student.projects.length ? student.projects.map(proj => `
             <div class="project-card-mini">
               <h4>${proj.title}</h4>
               <p>${proj.description}</p>
@@ -404,7 +348,7 @@ class BatchfolioApp {
                 ${proj.tech.map(t => `<span class="tech-tag-mini">${t}</span>`).join('')}
               </div>
             </div>
-          `).join('')}
+          `).join('') : '<p class="enlarged-bio">No projects have been added yet.</p>'}
         </div>
       </div>
 
@@ -475,95 +419,6 @@ class BatchfolioApp {
     modalElement.classList.remove('active');
     modalElement.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
-  }
-
-  /**
-   * Auth view switcher (Login <-> Sign Up)
-   */
-  openAuthModal(view = 'login') {
-    this.switchAuthView(view);
-    this.openModal(this.authModal);
-  }
-
-  switchAuthView(view) {
-    if (view === 'login') {
-      this.loginFormDiv.style.display = 'block';
-      this.signupFormDiv.style.display = 'none';
-      this.tabLoginBtn.classList.add('active');
-      this.tabSignupBtn.classList.remove('active');
-      this.authTitle.textContent = 'Welcome to Batchfolio';
-      this.authSubtitle.textContent = 'Access student portfolio portal & manage your profile';
-    } else {
-      this.loginFormDiv.style.display = 'none';
-      this.signupFormDiv.style.display = 'block';
-      this.tabSignupBtn.classList.add('active');
-      this.tabLoginBtn.classList.remove('active');
-      this.authTitle.textContent = 'Join AIML Batchfolio';
-      this.authSubtitle.textContent = 'Register your student profile for Class of 2024–2028';
-    }
-  }
-
-  /**
-   * Handle Login submission
-   */
-  async handleLogin(e) {
-    e.preventDefault();
-    const identifier = document.getElementById('login-identifier').value.trim();
-    const password = document.getElementById('login-password').value;
-
-    try {
-      const res = await ApiService.login({ identifier, password });
-      this.currentUser = res.user;
-      this.closeModal(this.authModal);
-      this.openLoginBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>${this.currentUser.name}</span>
-      `;
-      this.showToast(`Welcome back, ${this.currentUser.name}! Logged into AIML Batchfolio.`, 'success');
-    } catch (err) {
-      this.showToast(err.message || 'Login failed', 'error');
-    }
-  }
-
-  /**
-   * Handle Signup submission — password is DOB in DDMMYYYY (set by backend)
-   */
-  async handleSignup(e) {
-    e.preventDefault();
-    const name   = document.getElementById('signup-name').value.trim();
-    const usn    = document.getElementById('signup-usn').value.trim().toUpperCase();
-    const email  = document.getElementById('signup-email').value.trim();
-    const dobRaw = document.getElementById('signup-dob').value; // 'YYYY-MM-DD'
-    const phone  = document.getElementById('signup-phone').value.trim();
-    const year   = parseInt(document.getElementById('signup-year').value) || undefined;
-
-    if (!dobRaw) {
-      this.showToast('Date of Birth is required (it becomes your password)', 'error');
-      return;
-    }
-
-    // Derive the password shown to user: DDMMYYYY
-    const [y, m, d] = dobRaw.split('-');
-    const derivedPassword = `${d}${m}${y}`;
-
-    const submitBtn = document.getElementById('btn-submit-signup');
-    submitBtn.disabled = true;
-    submitBtn.querySelector('span').textContent = 'Registering...';
-
-    try {
-      const res = await ApiService.signup({ name, usn, email, dob: dobRaw, phone_no: phone || undefined, year, branch: 'AIML' });
-      this.showToast(`✓ Registered! Your password is your DOB: ${derivedPassword}`, 'success');
-      this.switchAuthView('login');
-      document.getElementById('login-identifier').value = usn;
-      document.getElementById('login-password').value = derivedPassword;
-      // Reload student list
-      await this.loadData();
-    } catch (err) {
-      this.showToast(err.message || 'Signup failed', 'error');
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.querySelector('span').textContent = 'Register Student Account';
-    }
   }
 
   /**

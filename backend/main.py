@@ -1,39 +1,24 @@
 """
 AIML Batchfolio — FastAPI Main Application
-Password convention: DOB in DDMMYYYY format
-  e.g.  DOB 23/11/2006  →  password "23112006"
+Login uses a student's USN and date of birth as DDMMYYYY.
 
 Endpoints:
-  POST /api/auth/signup     — Register a new student (password = DOB as DDMMYYYY)
-  POST /api/auth/login      — Login with USN/email + DOB password
+  POST /api/auth/login      — Login with USN + DOB password
   GET  /api/students        — List all students (public)
   GET  /api/students/{usn}  — Get single student by USN
   PUT  /api/students/{usn}  — Edit own profile (JWT required)
   GET  /api/batch-info      — Batch metadata
   GET  /api/health          — Health check
 """
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import date, datetime, timezone
+import hmac
 import os
-from datetime import datetime, timezone
-
-
-def dob_to_password(dob_iso: str) -> str:
-    """Convert ISO date 'YYYY-MM-DD' → 'DDMMYYYY' (the student's password)."""
-    dt = datetime.strptime(dob_iso, "%Y-%m-%d")
-    return dt.strftime("%d%m%Y")
 
 from config import supabase
-from schemas import (
-    SignupRequest, LoginRequest, TokenResponse,
-    StudentUpdateRequest, StudentPublicResponse
-)
-from auth import (
-    create_access_token,
-    supabase_create_user,
-    supabase_sign_in,
-    get_current_student,
-)
+from schemas import LoginRequest, StudentUpdateRequest
+from auth import create_access_token, get_current_student
 
 app = FastAPI(
     title="AIML Batchfolio API",
@@ -96,104 +81,44 @@ def get_batch_info():
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# AUTH: SIGNUP
-# ═══════════════════════════════════════════════════════════════════════════════
-
-@app.post("/api/auth/signup", tags=["Auth"], status_code=status.HTTP_201_CREATED)
-def signup(body: SignupRequest):
-    """
-    Register a new AIML student.
-    Password is derived automatically from DOB: DDMMYYYY
-      e.g. DOB 2006-05-15  →  password "15052006"
-    DOB is required for registration.
-    """
-    # DOB is mandatory — password comes from it
-    if not body.dob:
-        raise HTTPException(status_code=422, detail="Date of birth (dob) is required for registration")
-
-    # Derive password from DOB
-    auto_password = dob_to_password(body.dob.isoformat())
-
-    # Check duplicates
-    existing_usn = supabase.table("student").select("id").eq("usn", body.usn.upper()).execute()
-    if existing_usn.data:
-        raise HTTPException(status_code=409, detail="USN already registered")
-
-    existing_email = supabase.table("student").select("id").eq("email", body.email.lower()).execute()
-    if existing_email.data:
-        raise HTTPException(status_code=409, detail="Email already registered")
-
-    # 1. Create Supabase Auth user (password = DDMMYYYY)
-    auth_uid = supabase_create_user(body.email.lower(), auto_password)
-
-    # 2. Insert into student table
-    now = datetime.now(timezone.utc).isoformat()
-    row = {
-        "name":         body.name,
-        "usn":          body.usn.upper(),
-        "email":        body.email.lower(),
-        "dept":         body.dept,
-        "auth_user_id": auth_uid,
-        "phone_no":     body.phone_no,
-        "dob":          body.dob.isoformat(),
-        "created_at":   now,
-        "updated_at":   now,
-    }
-    insert_res = supabase.table("student").insert(row).execute()
-    if not insert_res.data:
-        raise HTTPException(status_code=500, detail="Failed to create student record")
-
-    student = insert_res.data[0]
-
-    # 3. Create JWT
-    token = create_access_token({"sub": student["usn"], "email": student["email"], "id": student["id"]})
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user": {"id": student["id"], "name": student["name"], "usn": student["usn"], "email": student["email"]},
-    }
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # AUTH: LOGIN
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @app.post("/api/auth/login", tags=["Auth"])
 def login(body: LoginRequest):
     """
-    Log in with USN or email.
-    Password = DOB in DDMMYYYY format (e.g. DOB 23/11/2006 → "23112006").
-    Resolves USN → email → Supabase Auth sign-in → JWT.
+    Authenticate a student by USN and DOB in DDMMYYYY format.
     """
-    identifier = body.identifier.strip()
-
-    # Resolve: if identifier is not an email, look up by USN
-    if "@" not in identifier:
-        res = supabase.table("student").select("email").eq("usn", identifier.upper()).execute()
-        if not res.data:
-            raise HTTPException(status_code=401, detail="USN not found")
-        email = res.data[0]["email"]
-    else:
-        email = identifier.lower()
-
-    # Authenticate via Supabase Auth
-    try:
-        supabase_sign_in(email, body.password)
-    except HTTPException:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    # Fetch student record
-    student_res = supabase.table("student").select("*").eq("email", email).execute()
+    student_res = (
+        supabase.table("student")
+        .select("id, name, usn, email, dob")
+        .eq("usn", body.usn.strip().upper())
+        .execute()
+    )
     if not student_res.data:
-        raise HTTPException(status_code=404, detail="Student record not found")
+        raise HTTPException(status_code=401, detail="Invalid USN or date of birth")
     student = student_res.data[0]
+    student_dob = student.get("dob")
+    if not student_dob:
+        raise HTTPException(status_code=401, detail="Invalid USN or date of birth")
+
+    expected_password = date.fromisoformat(str(student_dob)).strftime("%d%m%Y")
+    if not hmac.compare_digest(body.password, expected_password):
+        raise HTTPException(status_code=401, detail="Invalid USN or date of birth")
 
     # Create JWT
-    token = create_access_token({"sub": student["usn"], "email": student["email"], "id": student["id"]})
+    token = create_access_token(
+        {"sub": student["usn"], "email": student.get("email"), "id": student["id"]}
+    )
     return {
         "access_token": token,
         "token_type": "bearer",
-        "user": {"id": student["id"], "name": student["name"], "usn": student["usn"], "email": student["email"]},
+        "user": {
+            "id": student["id"],
+            "name": student["name"],
+            "usn": student["usn"],
+            "email": student.get("email"),
+        },
     }
 
 
@@ -208,7 +133,7 @@ def list_students():
     Sensitive fields (auth_user_id) are excluded.
     """
     res = supabase.table("student").select(
-        "id, name, usn, email, dept, phone_no, dob, "
+        "id, name, usn, email, dept, bio, skills, phone_no, "
         "profile_picture_url, github_url, linkedin_url, "
         "instagram_url, portfolio_website_url, resume_url, "
         "created_at, updated_at"
@@ -224,7 +149,7 @@ def list_students():
 @app.get("/api/students/{usn}", tags=["Students"])
 def get_student(usn: str):
     res = supabase.table("student").select(
-        "id, name, usn, email, dept, phone_no, dob, "
+        "id, name, usn, email, dept, bio, skills, phone_no, "
         "profile_picture_url, github_url, linkedin_url, "
         "instagram_url, portfolio_website_url, resume_url, "
         "created_at, updated_at"
