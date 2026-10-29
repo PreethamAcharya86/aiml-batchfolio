@@ -251,10 +251,16 @@
           </div>
 
           <div class="form-group">
-            <label for="login-password">Password</label>
+            <div style="display:flex; justify-content:space-between; align-items:baseline;">
+              <label for="login-password">Password <span style="color:#67e8f9;font-size:0.75rem;font-weight:500;">(DOB: DDMMYYYY)</span></label>
+            </div>
             <div class="input-with-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <input type="password" id="login-password" placeholder="Enter your password" required>
+              <input type="password" id="login-password" placeholder="e.g. 23112006 (DDMMYYYY)" required>
+            </div>
+            <div style="margin-top:0.35rem; font-size:0.75rem; color:#94a3b8; display:flex; align-items:center; gap:0.3rem;">
+              <span>🔑</span>
+              <span>Default password is your <strong>DOB in DDMMYYYY</strong> format (e.g. 23/11/2006 → 23112006)</span>
             </div>
           </div>
 
@@ -263,7 +269,7 @@
               <input type="checkbox" id="login-remember" checked>
               <span>Remember me</span>
             </label>
-            <a href="#forgot" class="link-forgot" id="forgot-password-link">Forgot password?</a>
+            <a href="#forgot" class="link-forgot" id="forgot-password-link">Password Help</a>
           </div>
 
           <button type="submit" class="btn btn-primary btn-block" id="btn-submit-login">
@@ -292,7 +298,6 @@
                 <input type="text" id="signup-name" placeholder="Full Student Name" required>
               </div>
             </div>
-
             <div class="form-group">
               <label for="signup-usn">USN</label>
               <div class="input-with-icon">
@@ -310,24 +315,51 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label for="signup-dob">Date of Birth <span style="color:#67e8f9;font-size:0.75rem;font-weight:500;margin-left:0.4rem;">🔑 Auto-becomes your password (DDMMYYYY)</span></label>
+            <div class="input-with-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <input type="date" id="signup-dob" required max="2010-12-31" min="2000-01-01">
+            </div>
+          </div>
+
           <div class="form-row">
             <div class="form-group">
-              <label for="signup-branch">Branch</label>
+              <label for="signup-phone">Phone Number</label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <input type="tel" id="signup-phone" placeholder="10-digit mobile">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="signup-year">Academic Year</label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                <select id="signup-year" style="width:100%;background:transparent;border:none;outline:none;color:#fff;font-family:inherit;font-size:0.92rem;padding:0.75rem 0;">
+                  <option value="" style="background:#111728">Select Year</option>
+                  <option value="1" style="background:#111728">1st Year</option>
+                  <option value="2" style="background:#111728">2nd Year</option>
+                  <option value="3" style="background:#111728">3rd Year</option>
+                  <option value="4" style="background:#111728">4th Year</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Branch</label>
               <input type="text" id="signup-branch" value="AIML" readonly class="input-readonly">
             </div>
-
             <div class="form-group">
-              <label for="signup-batch">Batch</label>
+              <label>Batch</label>
               <input type="text" id="signup-batch" value="2024-2028" readonly class="input-readonly">
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="signup-password">Password</label>
-            <div class="input-with-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <input type="password" id="signup-password" placeholder="Min. 8 characters" required>
-            </div>
+          <div style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.25);border-radius:10px;padding:0.75rem 1rem;font-size:0.82rem;color:#67e8f9;display:flex;align-items:flex-start;gap:0.5rem;">
+            <span>🔑</span>
+            <span>Your password is auto-set to your <strong>DOB in DDMMYYYY format</strong>.<br>Example: DOB 23/11/2006 → Password <strong>23112006</strong></span>
           </div>
 
           <button type="submit" class="btn btn-primary btn-block" id="btn-submit-signup">
@@ -336,9 +368,7 @@
           </button>
         </form>
 
-        <div class="auth-divider">
-          <span>Already registered?</span>
-        </div>
+        <div class="auth-divider"><span>Already registered?</span></div>
 
         <button type="button" class="btn btn-secondary btn-block" id="btn-switch-to-login">
           Sign In with Existing Account

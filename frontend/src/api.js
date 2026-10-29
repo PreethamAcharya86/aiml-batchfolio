@@ -5,8 +5,8 @@
  */
 import { BATCH_INFO } from './students-data.js';
 
-const API_BASE  = 'http://localhost:8000/api';
-const TIMEOUT_MS = 3000;
+const API_BASE = window.BATCHFOLIO_API_BASE || 'http://127.0.0.1:8000/api';
+const TIMEOUT_MS = 10000;
 
 // ── Internal: fetch with timeout ──────────────────────────────────────────────
 async function apiFetch(path, options = {}) {

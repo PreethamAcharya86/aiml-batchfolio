@@ -187,6 +187,14 @@ class BatchfolioApp {
     this.loginForm.addEventListener('submit', (e) => this.handleLogin(e));
     this.signupForm.addEventListener('submit', (e) => this.handleSignup(e));
 
+    const forgotLink = document.getElementById('forgot-password-link');
+    if (forgotLink) {
+      forgotLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.showToast('Default password is your DOB in DDMMYYYY format (e.g. 23112006 for 23/11/2006).', 'info');
+      });
+    }
+
     // Resumes Modal Triggers
     this.navResumesBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -580,8 +588,15 @@ class BatchfolioApp {
   }
 }
 
-// Instantiate and expose globally
-document.addEventListener('DOMContentLoaded', () => {
+// Instantiate after the Next.js route has mounted the legacy markup.
+function initializeBatchfolioApp() {
+  if (window.batchfolioApp) return;
   window.batchfolioApp = new BatchfolioApp();
   window.batchfolioApp.init();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeBatchfolioApp, { once: true });
+} else {
+  initializeBatchfolioApp();
+}
