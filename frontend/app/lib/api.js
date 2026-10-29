@@ -5,7 +5,7 @@
  */
 import { BATCH_INFO } from './students-data.js';
 
-const API_BASE = window.BATCHFOLIO_API_BASE || 'http://127.0.0.1:8000/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api';
 const TIMEOUT_MS = 10000;
 
 // ── Internal: fetch with timeout ──────────────────────────────────────────────

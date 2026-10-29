@@ -1,6 +1,6 @@
 /**
  * AIML Batchfolio — Static Batch Metadata
- * Only used as a last-resort fallback if the backend is completely unreachable.
+ * Used as a last-resort fallback if the backend is unavailable.
  * All student data is served exclusively from the backend API.
  */
 export const BATCH_INFO = {

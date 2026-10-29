@@ -588,15 +588,8 @@ class BatchfolioApp {
   }
 }
 
-// Instantiate after the Next.js route has mounted the legacy markup.
-function initializeBatchfolioApp() {
+export function initializeBatchfolioApp() {
   if (window.batchfolioApp) return;
   window.batchfolioApp = new BatchfolioApp();
-  window.batchfolioApp.init();
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeBatchfolioApp, { once: true });
-} else {
-  initializeBatchfolioApp();
+  void window.batchfolioApp.init();
 }
