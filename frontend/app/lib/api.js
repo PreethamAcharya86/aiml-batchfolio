@@ -120,11 +120,26 @@ export const ApiService = {
     return { success: true, ...data };
   },
 
+  /** GET /api/students/me — current student's profile (JWT required) */
+  async getMyProfile() {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated. Please log in.');
+    const res = await apiFetch('/students/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (res.status === 401) clearToken();
+      throw new Error(data.detail || 'Failed to load profile');
+    }
+    return data;
+  },
+
   /** PUT /api/students/{usn} — Edit own profile (JWT required) */
   async updateProfile(usn, updates) {
     const token = getToken();
     if (!token) throw new Error('Not authenticated. Please log in.');
-    const res = await apiFetch(`/students/${usn}`, {
+    const res = await apiFetch(`/students/${encodeURIComponent(usn)}`, {
       method: 'PUT',
       body: JSON.stringify(updates),
       headers: { Authorization: `Bearer ${token}` },

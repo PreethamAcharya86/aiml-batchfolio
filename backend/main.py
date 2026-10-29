@@ -10,7 +10,7 @@ Endpoints:
   GET  /api/batch-info      — Batch metadata
   GET  /api/health          — Health check
 """
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import date, datetime, timezone
 import hmac
@@ -18,7 +18,11 @@ import os
 
 from config import supabase
 from schemas import LoginRequest, StudentUpdateRequest
-from auth import create_access_token, get_current_student
+from auth import (
+    create_access_token,
+    get_current_student,
+    decode_token,
+)
 
 app = FastAPI(
     title="AIML Batchfolio API",
@@ -42,6 +46,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+STUDENT_PROFILE_COLUMNS = (
+    "id, name, dob, usn, phone_no, dept, bio, skills, email, "
+    "profile_picture_url, github_url, linkedin_url, instagram_url, "
+    "portfolio_website_url, resume_url, created_at, updated_at"
+)
+STUDENT_PROFILE_RESPONSE_COLUMNS = STUDENT_PROFILE_COLUMNS
+STUDENT_PUBLIC_COLUMNS = STUDENT_PROFILE_RESPONSE_COLUMNS.replace("dob, ", "")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -132,14 +144,32 @@ def list_students():
     Return all students sorted by name (public — no auth required).
     Sensitive fields (auth_user_id) are excluded.
     """
-    res = supabase.table("student").select(
-        "id, name, usn, email, dept, bio, skills, phone_no, "
-        "profile_picture_url, github_url, linkedin_url, "
-        "instagram_url, portfolio_website_url, resume_url, "
-        "created_at, updated_at"
-    ).order("name").execute()
+    res = (
+        supabase.table("student")
+        .select(STUDENT_PUBLIC_COLUMNS)
+        .order("name")
+        .execute()
+    )
 
     return res.data or []
+
+
+@app.get("/api/students/me", tags=["Students"])
+def get_my_profile(current_user: dict = Depends(get_current_student)):
+    """Return the authenticated student's complete editable profile."""
+    usn = current_user.get("sub")
+    if not isinstance(usn, str) or not usn:
+        raise HTTPException(status_code=401, detail="Invalid authentication token")
+
+    res = (
+        supabase.table("student")
+        .select(STUDENT_PROFILE_RESPONSE_COLUMNS)
+        .eq("usn", usn.upper())
+        .execute()
+    )
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+    return res.data[0]
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -147,12 +177,32 @@ def list_students():
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @app.get("/api/students/{usn}", tags=["Students"])
-def get_student(usn: str):
+def get_student(
+    usn: str,
+    request: Request,
+):
+    if usn.casefold() == "me":
+        scheme, separator, token = request.headers.get("authorization", "").partition(" ")
+        if scheme.casefold() != "bearer" or not separator or not token:
+            raise HTTPException(status_code=401, detail="Authentication required")
+
+        current_user = decode_token(token)
+        current_usn = current_user.get("sub")
+        if not isinstance(current_usn, str) or not current_usn:
+            raise HTTPException(status_code=401, detail="Invalid authentication token")
+
+        res = (
+            supabase.table("student")
+            .select(STUDENT_PROFILE_RESPONSE_COLUMNS)
+            .eq("usn", current_usn.upper())
+            .execute()
+        )
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Student profile not found")
+        return res.data[0]
+
     res = supabase.table("student").select(
-        "id, name, usn, email, dept, bio, skills, phone_no, "
-        "profile_picture_url, github_url, linkedin_url, "
-        "instagram_url, portfolio_website_url, resume_url, "
-        "created_at, updated_at"
+        STUDENT_PUBLIC_COLUMNS
     ).eq("usn", usn.upper()).execute()
 
     if not res.data:
@@ -179,17 +229,29 @@ def update_student(
         raise HTTPException(status_code=403, detail="You can only edit your own profile")
 
     # Build update payload — only include fields that were actually sent
-    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    updates = body.model_dump(exclude_unset=True)
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
+    if "name" in updates and not updates["name"]:
+        raise HTTPException(status_code=422, detail="Name cannot be empty")
+    if "dob" in updates and updates["dob"] is None:
+        raise HTTPException(status_code=422, detail="Date of birth cannot be empty")
+    if "skills" in updates and updates["skills"] is None:
+        updates["skills"] = []
 
     # Serialize date objects
-    if "dob" in updates and updates["dob"]:
+    if "dob" in updates and updates["dob"] is not None:
         updates["dob"] = updates["dob"].isoformat()
 
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
 
-    res = supabase.table("student").update(updates).eq("usn", usn.upper()).execute()
+    res = (
+        supabase.table("student")
+        .update(updates)
+        .eq("usn", usn.upper())
+        .select(STUDENT_PROFILE_RESPONSE_COLUMNS)
+        .execute()
+    )
     if not res.data:
         raise HTTPException(status_code=404, detail="Student not found or update failed")
 

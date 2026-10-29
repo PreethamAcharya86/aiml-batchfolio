@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import LoginModal from "./LoginModal";
+import { ApiService, getToken } from "./lib/api.js";
 
 export default function HomePage() {
   const [currentUser, setCurrentUser] = useState<{ name: string; usn: string } | null>(null);
@@ -10,6 +12,14 @@ export default function HomePage() {
     void import("./lib/batchfolio-app.js")
       .then(({ initializeBatchfolioApp }) => initializeBatchfolioApp())
       .catch((error) => console.error("Failed to initialize Batchfolio:", error));
+
+    if (getToken()) {
+      void ApiService.getMyProfile()
+        .then((profile) => setCurrentUser({ name: profile.name, usn: profile.usn }))
+        .catch((error) => {
+          console.error("Could not restore the logged-in student:", error);
+        });
+    }
   }, []);
 
   function openLogin() {
@@ -90,30 +100,35 @@ export default function HomePage() {
           {"\n      "}
           <div className="nav-actions">
             {"\n        "}
-            <button className="profile-icon-btn" id="nav-profile-btn" title="Student Profile &amp; Quick Info" aria-label="Open User Profile" onClick={openLogin}>
-              {"\n          "}
-              <div className="profile-avatar-mini" id="nav-avatar-icon">
-                {"\n            "}
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                {"\n          "}
-              </div>
-              {"\n        "}
-            </button>
-            {"\n\n        "}
-            <button className="btn btn-primary" id="open-login-btn" onClick={openLogin}>
-              {"\n          "}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="btn-icon">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                <polyline points="10 17 15 12 10 7"></polyline>
-                <line x1="15" y1="12" x2="3" y2="12"></line>
-              </svg>
-              {"\n          "}
-              <span>{currentUser?.name ?? "Login"}</span>
-              {"\n        "}
-            </button>
+            {currentUser ? (
+              <Link
+                className="btn btn-primary profile-user-btn"
+                href="/profile"
+                aria-label={`Edit profile for ${currentUser.name}`}
+              >
+                <span className="profile-avatar-mini" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </span>
+                <span>{currentUser.name}</span>
+              </Link>
+            ) : (
+              <>
+                <button className="profile-icon-btn" id="nav-profile-btn" title="Student Login" aria-label="Open User Login" onClick={openLogin}>
+                  <span className="profile-avatar-mini" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </span>
+                </button>
+                <button className="btn btn-primary" id="open-login-btn" onClick={openLogin}>
+                  <span>Login</span>
+                </button>
+              </>
+            )}
             {"\n      "}
           </div>
           {"\n    "}

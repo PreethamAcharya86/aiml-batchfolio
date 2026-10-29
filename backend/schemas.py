@@ -2,7 +2,7 @@
 AIML Batchfolio — Pydantic Schemas
 Request/Response models for all API routes.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import date
 
@@ -23,8 +23,11 @@ class TokenResponse(BaseModel):
 
 class StudentUpdateRequest(BaseModel):
     name: Optional[str] = None
+    email: Optional[EmailStr] = None
     phone_no: Optional[str] = None
     dob: Optional[date] = None
+    bio: Optional[str] = None
+    skills: Optional[list[str]] = None
     profile_picture_url: Optional[str] = None
     github_url: Optional[str] = None
     linkedin_url: Optional[str] = None
@@ -39,10 +42,11 @@ class StudentPublicResponse(BaseModel):
     id: int
     name: str
     usn: str
-    email: str
+    email: Optional[str] = None
     dept: str
     phone_no: Optional[str] = None
-    dob: Optional[date] = None
+    bio: Optional[str] = None
+    skills: list[str] = Field(default_factory=list)
     profile_picture_url: Optional[str] = None
     github_url: Optional[str] = None
     linkedin_url: Optional[str] = None
