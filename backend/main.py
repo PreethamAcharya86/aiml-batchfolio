@@ -136,7 +136,6 @@ def signup(body: SignupRequest):
         "auth_user_id": auth_uid,
         "phone_no":     body.phone_no,
         "dob":          body.dob.isoformat(),
-        "year":         body.year,
         "created_at":   now,
         "updated_at":   now,
     }
@@ -209,7 +208,7 @@ def list_students():
     Sensitive fields (auth_user_id) are excluded.
     """
     res = supabase.table("student").select(
-        "id, name, usn, email, dept, year, phone_no, dob, "
+        "id, name, usn, email, dept, phone_no, dob, "
         "profile_picture_url, github_url, linkedin_url, "
         "instagram_url, portfolio_website_url, resume_url, "
         "created_at, updated_at"
@@ -225,7 +224,7 @@ def list_students():
 @app.get("/api/students/{usn}", tags=["Students"])
 def get_student(usn: str):
     res = supabase.table("student").select(
-        "id, name, usn, email, dept, year, phone_no, dob, "
+        "id, name, usn, email, dept, phone_no, dob, "
         "profile_picture_url, github_url, linkedin_url, "
         "instagram_url, portfolio_website_url, resume_url, "
         "created_at, updated_at"

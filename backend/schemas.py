@@ -16,7 +16,6 @@ class SignupRequest(BaseModel):
     dob: date  # Required — password is derived as DDMMYYYY
     phone_no: Optional[str] = None
     dept: str = "AIML"
-    year: Optional[int] = Field(None, ge=1, le=4)
 
 class LoginRequest(BaseModel):
     identifier: str    # USN or email
@@ -34,7 +33,6 @@ class StudentUpdateRequest(BaseModel):
     name: Optional[str] = None
     phone_no: Optional[str] = None
     dob: Optional[date] = None
-    year: Optional[int] = Field(None, ge=1, le=4)
     profile_picture_url: Optional[str] = None
     github_url: Optional[str] = None
     linkedin_url: Optional[str] = None
@@ -51,7 +49,6 @@ class StudentPublicResponse(BaseModel):
     usn: str
     email: str
     dept: str
-    year: Optional[int] = None
     phone_no: Optional[str] = None
     dob: Optional[date] = None
     profile_picture_url: Optional[str] = None
