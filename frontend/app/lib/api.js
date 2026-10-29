@@ -1,11 +1,16 @@
 /**
  * AIML Batchfolio — API Service
  * All student data is fetched exclusively from the FastAPI backend.
- * Backend URL: http://localhost:8000
+ * Configure NEXT_PUBLIC_API_BASE_URL for deployed environments.
  */
 import { BATCH_INFO } from './students-data.js';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000/api';
+const configuredApiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+if (process.env.NODE_ENV === 'production' && !configuredApiBase) {
+  throw new Error('NEXT_PUBLIC_API_BASE_URL must be set to the deployed API URL.');
+}
+
+const API_BASE = (configuredApiBase || 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
 const TIMEOUT_MS = 10000;
 
 // ── Internal: fetch with timeout ──────────────────────────────────────────────

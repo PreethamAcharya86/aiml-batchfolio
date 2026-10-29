@@ -15,7 +15,8 @@ Set-Location .\backend
 .\venv\Scripts\python.exe -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Set `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and `JWT_SECRET` in `backend\.env`.
+Set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` in `backend\.env`. Set a random
+`JWT_SECRET` of at least 32 bytes; production refuses to start without it.
 The backend allows the local Next.js origins on port 3000 by default.
 
 ### Frontend
@@ -45,19 +46,28 @@ NEXT_PUBLIC_API_BASE_URL=https://YOUR-BACKEND-HOST/api
 ```
 
 Use the public HTTPS URL of the deployed FastAPI API. Redeploy after changing
-this value because `NEXT_PUBLIC_` variables are embedded at build time.
+this value because `NEXT_PUBLIC_` variables are embedded at build time. The
+production build fails if this value is missing. Include the `/api` path and
+omit a trailing slash, for example `https://batchfolio-api.onrender.com/api`.
 
 ### Backend — separate Python host
 
 Deploy `backend` as a Python web service (for example, on Render):
 
+- Root directory: `backend`
 - Build command: `pip install -r requirements.txt`
 - Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+- Health check path: `/api/health`
 
-Set `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and a strong `JWT_SECRET` as backend
-environment variables. Set `FRONTEND_ORIGINS` to the comma-separated deployed
-frontend origins, for example `https://YOUR-PROJECT.vercel.app`. Include any
-custom frontend domain as an additional origin. Do not include `/` paths.
+Set these backend environment variables:
+
+- `ENVIRONMENT=production`
+- `SUPABASE_URL`
+- `SUPABASE_SECRET_KEY` (keep this only on the backend; never expose it to the frontend)
+- `JWT_SECRET` (a randomly generated value of at least 32 bytes)
+- `FRONTEND_ORIGINS` (comma-separated frontend origins, such as
+  `https://YOUR-PROJECT.vercel.app,https://www.example.com`; use origins only,
+  with no paths or trailing slashes)
 
 The API health check is available at `/api/health`, and the OpenAPI
 documentation is available at `/docs`.

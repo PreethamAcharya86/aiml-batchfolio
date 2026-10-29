@@ -444,7 +444,12 @@ class BatchfolioApp {
 }
 
 export function initializeBatchfolioApp() {
-  if (window.batchfolioApp) return;
+  const studentsGrid = document.getElementById('students-grid');
+  if (window.batchfolioApp?.studentsGrid === studentsGrid) {
+    void window.batchfolioApp.loadData();
+    return;
+  }
+
   window.batchfolioApp = new BatchfolioApp();
   void window.batchfolioApp.init();
 }

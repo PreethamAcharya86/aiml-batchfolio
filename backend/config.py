@@ -18,6 +18,14 @@ if not SUPABASE_URL or not SUPABASE_SECRET_KEY:
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SECRET_KEY)
 
 # JWT settings (for signing our own tokens)
-JWT_SECRET: str = os.getenv("JWT_SECRET", "aiml_batchfolio_jwt_secret_2024")
+JWT_SECRET: str = os.getenv("JWT_SECRET", "")
+IS_PRODUCTION = (
+    os.getenv("ENVIRONMENT", "").casefold() == "production"
+    or os.getenv("RENDER", "").casefold() == "true"
+)
+if IS_PRODUCTION and len(JWT_SECRET.encode("utf-8")) < 32:
+    raise RuntimeError("Set JWT_SECRET to a random value of at least 32 bytes in production")
+if not JWT_SECRET:
+    JWT_SECRET = "local-development-only-aiml-batchfolio-secret"
 JWT_ALGORITHM: str = "HS256"
 JWT_EXPIRE_HOURS: int = 24
