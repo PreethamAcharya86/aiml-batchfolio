@@ -10,6 +10,10 @@ load_dotenv()
 
 SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
 SUPABASE_SECRET_KEY: str = os.getenv("SUPABASE_SECRET_KEY", "")
+PROFILE_PICTURES_BUCKET: str = os.getenv(
+    "PROFILE_PICTURES_BUCKET", "profile-pictures"
+)
+RESUMES_BUCKET: str = os.getenv("RESUMES_BUCKET", "resumes")
 
 if not SUPABASE_URL or not SUPABASE_SECRET_KEY:
     raise RuntimeError("Missing SUPABASE_URL or SUPABASE_SECRET_KEY in .env")

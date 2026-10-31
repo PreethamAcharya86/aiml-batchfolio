@@ -18,11 +18,13 @@ async function apiFetch(path, options = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+    const defaultHeaders = isFormData ? {} : { 'Content-Type': 'application/json' };
     const res = await fetch(`${API_BASE}${path}`, {
       ...options,
       signal: controller.signal,
       headers: {
-        'Content-Type': 'application/json',
+        ...defaultHeaders,
         ...options.headers,
       },
     });
@@ -151,6 +153,77 @@ export const ApiService = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Update failed');
+    return data;
+  },
+
+  /** POST /api/students/{usn}/profile-picture (file upload) */
+  async uploadProfilePicture(usn, file) {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated. Please log in.');
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiFetch(`/students/${encodeURIComponent(usn)}/profile-picture`, {
+      method: 'POST',
+      body: formData,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to upload profile picture');
+    return data;
+  },
+
+  /** DELETE /api/students/{usn}/profile-picture */
+  async removeProfilePicture(usn) {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated. Please log in.');
+    const res = await apiFetch(`/students/${encodeURIComponent(usn)}/profile-picture`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to remove profile picture');
+    return data;
+  },
+
+  /** POST /api/students/{usn}/resume (PDF file upload) */
+  async uploadResume(usn, file) {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated. Please log in.');
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiFetch(`/students/${encodeURIComponent(usn)}/resume`, {
+      method: 'POST',
+      body: formData,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to upload resume');
+    return data;
+  },
+
+  /** DELETE /api/students/{usn}/resume */
+  async removeResume(usn) {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated. Please log in.');
+    const res = await apiFetch(`/students/${encodeURIComponent(usn)}/resume`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to remove resume');
+    return data;
+  },
+
+  /** DELETE /api/students/{usn}/profile — Delete/reset profile details (keeps login account) */
+  async deleteProfile(usn) {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated. Please log in.');
+    const res = await apiFetch(`/students/${encodeURIComponent(usn)}/profile`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to delete profile');
     return data;
   },
 };
