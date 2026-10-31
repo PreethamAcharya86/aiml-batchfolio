@@ -5,6 +5,7 @@ import {
   ChangeEvent,
   DragEvent,
   FormEvent,
+  KeyboardEvent,
   useEffect,
   useRef,
   useState,
@@ -32,6 +33,58 @@ type StudentProfile = {
   updated_at: string | null;
 };
 
+const POPULAR_SKILLS = [
+  "Python",
+  "Machine Learning",
+  "Deep Learning",
+  "Artificial Intelligence",
+  "PyTorch",
+  "TensorFlow",
+  "Scikit-Learn",
+  "Computer Vision",
+  "Natural Language Processing (NLP)",
+  "Large Language Models (LLMs)",
+  "Generative AI",
+  "Data Science",
+  "Pandas",
+  "NumPy",
+  "OpenCV",
+  "Keras",
+  "MLOps",
+  "SQL",
+  "PostgreSQL",
+  "MongoDB",
+  "Data Engineering",
+  "Docker",
+  "Kubernetes",
+  "Git",
+  "GitHub",
+  "FastAPI",
+  "Flask",
+  "React",
+  "Next.js",
+  "Node.js",
+  "TypeScript",
+  "JavaScript",
+  "C++",
+  "Java",
+  "AWS",
+  "Google Cloud (GCP)",
+  "Microsoft Azure",
+  "Linux",
+  "REST APIs",
+  "Prompt Engineering",
+  "Reinforcement Learning",
+  "Neural Networks",
+  "Hugging Face",
+  "LangChain",
+  "RAG",
+  "Data Visualization",
+  "Matplotlib",
+  "Seaborn",
+  "Tailwind CSS",
+];
+
 function isStudentProfile(value: unknown): value is StudentProfile {
   if (typeof value !== "object" || value === null) return false;
   const profile = value as Record<string, unknown>;
@@ -48,16 +101,13 @@ function asInputValue(value: string | null) {
   return value ?? "";
 }
 
-function formatTimestamp(value: string | null) {
-  if (!value) return "Not available";
-  const timestamp = new Date(value);
-  return Number.isNaN(timestamp.getTime()) ? value : timestamp.toLocaleString();
-}
-
 export default function ProfileEditor() {
   const router = useRouter();
   const [profile, setProfile] = useState<StudentProfile | null>(null);
-  const [skills, setSkills] = useState("");
+  const [skillsList, setSkillsList] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState("");
+  const [isSkillDropdownOpen, setIsSkillDropdownOpen] = useState(false);
+
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
   const [resumeUrl, setResumeUrl] = useState<string | null>(null);
 
@@ -65,19 +115,16 @@ export default function ProfileEditor() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUploadingResume, setIsUploadingResume] = useState(false);
-  const [isDeletingProfile, setIsDeletingProfile] = useState(false);
 
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
   const [isDraggingResume, setIsDraggingResume] = useState(false);
-  const [showAvatarUrlInput, setShowAvatarUrlInput] = useState(false);
-  const [showResumeUrlInput, setShowResumeUrlInput] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const resumeInputRef = useRef<HTMLInputElement | null>(null);
+  const skillDropdownRef = useRef<HTMLDivElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
@@ -98,7 +145,7 @@ export default function ProfileEditor() {
         }
         if (active) {
           setProfile(result);
-          setSkills(result.skills.join(", "));
+          setSkillsList(result.skills || []);
           setProfilePictureUrl(result.profile_picture_url);
           setResumeUrl(result.resume_url);
         }
@@ -120,6 +167,61 @@ export default function ProfileEditor() {
       active = false;
     };
   }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        skillDropdownRef.current &&
+        !skillDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsSkillDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // ── Skill Tag Management ───────────────────────────────────────────────────
+  function addSkill(skillName: string) {
+    const trimmed = skillName.trim();
+    if (!trimmed) return;
+    const exists = skillsList.some(
+      (s) => s.toLowerCase() === trimmed.toLowerCase(),
+    );
+    if (!exists) {
+      setSkillsList((prev) => [...prev, trimmed]);
+    }
+    setSkillInput("");
+    setIsSkillDropdownOpen(false);
+  }
+
+  function removeSkill(skillToRemove: string) {
+    setSkillsList((prev) => prev.filter((s) => s !== skillToRemove));
+  }
+
+  function handleSkillKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (skillInput.trim()) {
+        addSkill(filteredSuggestions[0] || skillInput.trim());
+      }
+    } else if (event.key === "Backspace" && !skillInput && skillsList.length > 0) {
+      removeSkill(skillsList[skillsList.length - 1]);
+    }
+  }
+
+  const filteredSuggestions = POPULAR_SKILLS.filter(
+    (skill) =>
+      skill.toLowerCase().includes(skillInput.trim().toLowerCase()) &&
+      !skillsList.some((s) => s.toLowerCase() === skill.toLowerCase()),
+  ).slice(0, 8);
+
+  const isExactMatch = POPULAR_SKILLS.some(
+    (s) => s.toLowerCase() === skillInput.trim().toLowerCase(),
+  );
 
   // ── Avatar Upload Handlers ──────────────────────────────────────────────────
   async function handleAvatarFile(file: File) {
@@ -291,38 +393,6 @@ export default function ProfileEditor() {
     }
   }
 
-  // ── Delete Profile Handler (Preserves Login) ────────────────────────────────
-  async function handleDeleteProfileConfirm() {
-    if (!profile) return;
-    setError("");
-    setNotice("");
-    setIsDeletingProfile(true);
-
-    try {
-      const res = await ApiService.deleteProfile(profile.usn);
-      const updated = res.student;
-      setProfile(updated);
-      setSkills("");
-      setProfilePictureUrl(null);
-      setResumeUrl(null);
-      setShowDeleteModal(false);
-      setNotice(
-        "Your profile details have been deleted. Your student login account remains active.",
-      );
-
-      // Reset form input values
-      if (formRef.current) {
-        formRef.current.reset();
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to delete profile.",
-      );
-    } finally {
-      setIsDeletingProfile(false);
-    }
-  }
-
   // ── Form Submit ─────────────────────────────────────────────────────────────
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -339,10 +409,7 @@ export default function ProfileEditor() {
       dob: String(formData.get("dob") ?? "") || null,
       phone_no: String(formData.get("phone_no") ?? "").trim() || null,
       bio: String(formData.get("bio") ?? "").trim() || null,
-      skills: skills
-        .split(",")
-        .map((skill) => skill.trim())
-        .filter(Boolean),
+      skills: skillsList,
       profile_picture_url: profilePictureUrl,
       github_url: String(formData.get("github_url") ?? "").trim() || null,
       linkedin_url: String(formData.get("linkedin_url") ?? "").trim() || null,
@@ -361,7 +428,7 @@ export default function ProfileEditor() {
         );
       }
       setProfile(updatedProfile);
-      setSkills(updatedProfile.skills.join(", "));
+      setSkillsList(updatedProfile.skills || []);
       setProfilePictureUrl(updatedProfile.profile_picture_url);
       setResumeUrl(updatedProfile.resume_url);
       setNotice("Your profile has been saved successfully.");
@@ -413,7 +480,7 @@ export default function ProfileEditor() {
             <p className="profile-eyebrow">AIML Batchfolio</p>
             <h1 className="profile-title">Edit your profile</h1>
             <p className="profile-message">
-              Update your student details, photo, and portfolio links.
+              Update your student details, photo, skills, and portfolio links.
             </p>
           </div>
           <div className="profile-actions">
@@ -424,18 +491,6 @@ export default function ProfileEditor() {
               Log out
             </button>
           </div>
-        </div>
-
-        <div className="profile-identity">
-          <span>
-            <strong>Student ID:</strong> {profile.id}
-          </span>
-          <span>
-            <strong>USN:</strong> {profile.usn}
-          </span>
-          <span>
-            <strong>Department:</strong> {profile.dept}
-          </span>
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════════
@@ -455,7 +510,7 @@ export default function ProfileEditor() {
           <div
             aria-label="Upload or drop profile picture"
             className={`profile-avatar-dropzone ${isDraggingAvatar ? "dragging" : ""}`}
-            onClick={() => avatarInputRef.current?.click()}
+            onClick={() => !isUploadingAvatar && avatarInputRef.current?.click()}
             onDragEnter={handleAvatarDragOver}
             onDragLeave={handleAvatarDragLeave}
             onDragOver={handleAvatarDragOver}
@@ -486,25 +541,35 @@ export default function ProfileEditor() {
                 </div>
               )}
 
-              {/* Hover / Drag Overlay Hint */}
-              <div className="profile-avatar-overlay-hint">
-                <svg
-                  fill="none"
-                  height="20"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  width="20"
-                >
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                  <circle cx="12" cy="13" r="4"></circle>
-                </svg>
-                <span>{isUploadingAvatar ? "Uploading..." : "Change"}</span>
-              </div>
+              {/* Centered Modern Animated Loading Overlay or Hover Hint */}
+              {isUploadingAvatar ? (
+                <div className="profile-avatar-loading-overlay">
+                  <div className="modern-cyber-spinner">
+                    <div className="spinner-ring"></div>
+                    <div className="spinner-core"></div>
+                  </div>
+                  <span className="spinner-text">Uploading...</span>
+                </div>
+              ) : (
+                <div className="profile-avatar-overlay-hint">
+                  <svg
+                    fill="none"
+                    height="20"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    width="20"
+                  >
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                  <span>{profilePictureUrl ? "Change" : "Upload"}</span>
+                </div>
+              )}
             </div>
 
-            {/* If no profile picture, show prominent "+" symbol */}
-            {!profilePictureUrl && (
+            {/* If no profile picture and not uploading, show prominent "+" symbol */}
+            {!profilePictureUrl && !isUploadingAvatar && (
               <div className="profile-avatar-plus-badge" title="Add profile picture">
                 <svg
                   fill="none"
@@ -571,26 +636,6 @@ export default function ProfileEditor() {
           <p className="profile-hint">
             Drag & drop an image or click to browse (JPEG, PNG, WebP up to 5MB)
           </p>
-
-          <button
-            className="url-toggle-btn"
-            onClick={() => setShowAvatarUrlInput(!showAvatarUrlInput)}
-            type="button"
-          >
-            {showAvatarUrlInput ? "Hide image URL field" : "Or enter photo URL directly"}
-          </button>
-
-          {showAvatarUrlInput && (
-            <div style={{ maxWidth: 420, width: "100%", marginTop: "0.5rem" }}>
-              <input
-                className="profile-input"
-                onChange={(e) => setProfilePictureUrl(e.target.value || null)}
-                placeholder="https://example.com/avatar.jpg"
-                type="url"
-                value={profilePictureUrl || ""}
-              />
-            </div>
-          )}
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════════
@@ -657,13 +702,13 @@ export default function ProfileEditor() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="profile-skills">Skills</label>
+              <label htmlFor="profile-portfolio">Portfolio website URL</label>
               <input
                 className="profile-input"
-                id="profile-skills"
-                onChange={(event) => setSkills(event.target.value)}
-                placeholder="Python, Machine Learning, TensorFlow"
-                value={skills}
+                defaultValue={asInputValue(profile.portfolio_website_url)}
+                id="profile-portfolio"
+                name="portfolio_website_url"
+                type="url"
               />
             </div>
 
@@ -700,15 +745,95 @@ export default function ProfileEditor() {
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="profile-portfolio">Portfolio website URL</label>
-              <input
-                className="profile-input"
-                defaultValue={asInputValue(profile.portfolio_website_url)}
-                id="profile-portfolio"
-                name="portfolio_website_url"
-                type="url"
-              />
+            {/* ═════════════════════════════════════════════════════════════════
+                SKILLS: LINKEDIN-STYLE AUTOSUGGEST & PILL BOXES
+                ═════════════════════════════════════════════════════════════════ */}
+            <div className="form-group skills-full-row">
+              <label htmlFor="skills-search-input">Skills</label>
+
+              {/* Added Skill Pill Boxes */}
+              <div className="skills-tags-container">
+                {skillsList.length === 0 ? (
+                  <span className="skill-empty-hint">
+                    No skills added yet. Search or type below to add skills.
+                  </span>
+                ) : (
+                  skillsList.map((skill) => (
+                    <div className="skill-pill-box" key={skill}>
+                      <span>{skill}</span>
+                      <button
+                        aria-label={`Remove ${skill}`}
+                        className="skill-pill-remove"
+                        onClick={() => removeSkill(skill)}
+                        title="Remove skill"
+                        type="button"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* LinkedIn-style Search Input & Popup Dropdown */}
+              <div className="skills-input-wrapper" ref={skillDropdownRef}>
+                <input
+                  autoComplete="off"
+                  className="profile-input"
+                  id="skills-search-input"
+                  onChange={(e) => {
+                    setSkillInput(e.target.value);
+                    setIsSkillDropdownOpen(true);
+                  }}
+                  onFocus={() => setIsSkillDropdownOpen(true)}
+                  onKeyDown={handleSkillKeyDown}
+                  placeholder="Type a skill (e.g. Python, PyTorch, React, SQL)..."
+                  value={skillInput}
+                />
+
+                {isSkillDropdownOpen && (
+                  <div className="skills-dropdown-popup">
+                    {filteredSuggestions.map((suggestion) => (
+                      <div
+                        className="skills-dropdown-item"
+                        key={suggestion}
+                        onClick={() => addSkill(suggestion)}
+                      >
+                        <span>{suggestion}</span>
+                        <span className="skills-item-plus">+</span>
+                      </div>
+                    ))}
+
+                    {skillInput.trim() &&
+                      !isExactMatch &&
+                      !skillsList.some(
+                        (s) =>
+                          s.toLowerCase() === skillInput.trim().toLowerCase(),
+                      ) && (
+                        <div
+                          className="skills-dropdown-item add-custom"
+                          onClick={() => addSkill(skillInput.trim())}
+                        >
+                          <span>Add &quot;{skillInput.trim()}&quot;</span>
+                          <span className="skills-item-plus">+</span>
+                        </div>
+                      )}
+
+                    {!skillInput.trim() && filteredSuggestions.length === 0 && (
+                      <div
+                        className="skills-dropdown-item"
+                        style={{ color: "var(--text-dim)", cursor: "default" }}
+                      >
+                        Type keyword to search or add custom skills
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              <p className="profile-hint">
+                Select from suggestions or press Enter to add any custom skill.
+                Click &times; to delete.
+              </p>
             </div>
 
             {/* ═════════════════════════════════════════════════════════════════
@@ -812,26 +937,6 @@ export default function ProfileEditor() {
                   </div>
                 </div>
               )}
-
-              <button
-                className="url-toggle-btn"
-                onClick={() => setShowResumeUrlInput(!showResumeUrlInput)}
-                type="button"
-              >
-                {showResumeUrlInput ? "Hide resume URL field" : "Or enter resume URL directly"}
-              </button>
-
-              {showResumeUrlInput && (
-                <div style={{ marginTop: "0.5rem" }}>
-                  <input
-                    className="profile-input"
-                    onChange={(e) => setResumeUrl(e.target.value || null)}
-                    placeholder="https://example.com/resume.pdf"
-                    type="url"
-                    value={resumeUrl || ""}
-                  />
-                </div>
-              )}
             </div>
 
             <div className="form-group profile-bio-field">
@@ -846,15 +951,6 @@ export default function ProfileEditor() {
             </div>
           </div>
 
-          <div className="profile-record-meta">
-            <span>
-              <strong>Created:</strong> {formatTimestamp(profile.created_at)}
-            </span>
-            <span>
-              <strong>Last updated:</strong> {formatTimestamp(profile.updated_at)}
-            </span>
-          </div>
-
           {error && (
             <p className="login-error" role="alert">
               {error}
@@ -866,100 +962,12 @@ export default function ProfileEditor() {
             </p>
           )}
 
-          <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginTop: "1rem" }}>
             <button className="btn btn-primary" disabled={isSaving} type="submit">
               {isSaving ? "Saving..." : "Save profile"}
             </button>
           </div>
         </form>
-
-        {/* ═══════════════════════════════════════════════════════════════════════
-            DANGER ZONE: DELETE PROFILE (PRESERVES LOGIN ACCOUNT)
-            ═══════════════════════════════════════════════════════════════════════ */}
-        <section className="profile-danger-zone">
-          <div className="danger-zone-content">
-            <h3>Delete Profile Details</h3>
-            <p>
-              Clears your public profile details, bio, skills, profile picture,
-              resume, and links from the Batchfolio directory.
-              <br />
-              <strong>Note:</strong> Your student login credentials (USN &amp;
-              Date of Birth) are preserved, allowing you to log back in anytime.
-            </p>
-          </div>
-          <button
-            className="btn-danger"
-            disabled={isDeletingProfile}
-            onClick={() => setShowDeleteModal(true)}
-            type="button"
-          >
-            <svg
-              fill="none"
-              height="16"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              width="16"
-            >
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              <line x1="10" x2="10" y1="11" y2="17"></line>
-              <line x1="14" x2="14" y1="11" y2="17"></line>
-            </svg>
-            Delete Profile
-          </button>
-        </section>
-
-        {/* Confirmation Modal */}
-        {showDeleteModal && (
-          <div className="confirm-modal-backdrop" role="dialog">
-            <div className="confirm-modal-box">
-              <h3>
-                <svg
-                  fill="none"
-                  height="22"
-                  stroke="#ef4444"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  width="22"
-                >
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                  <line x1="12" x2="12" y1="9" y2="13"></line>
-                  <line x1="12" x2="12.01" y1="17" y2="17"></line>
-                </svg>
-                Delete Profile Details?
-              </h3>
-              <p>
-                Are you sure you want to delete your profile details? This will
-                clear your photo, resume, bio, skills, and portfolio links from
-                the batch directory.
-                <br />
-                <br />
-                <strong>Your login is safe:</strong> Your student account (USN &amp;
-                Date of Birth) will NOT be deleted permanently. You can log back
-                in anytime to re-enter your details.
-              </p>
-              <div className="confirm-modal-actions">
-                <button
-                  className="btn btn-secondary"
-                  disabled={isDeletingProfile}
-                  onClick={() => setShowDeleteModal(false)}
-                  type="button"
-                >
-                  Cancel
-                </button>
-                <button
-                  className="btn-danger"
-                  disabled={isDeletingProfile}
-                  onClick={handleDeleteProfileConfirm}
-                  type="button"
-                >
-                  {isDeletingProfile ? "Deleting..." : "Yes, Delete Profile"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </section>
     </main>
   );
