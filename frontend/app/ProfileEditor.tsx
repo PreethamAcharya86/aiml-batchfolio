@@ -450,8 +450,25 @@ export default function ProfileEditor() {
 
   if (isLoading) {
     return (
-      <main className="profile-page">
-        <p className="profile-message">Loading your profile...</p>
+      <main className="profile-page profile-loading-viewport">
+        <div className="profile-loader-card">
+          <div className="loader-portal">
+            <div className="portal-ring ring-outer"></div>
+            <div className="portal-ring ring-inner"></div>
+            <div className="portal-core">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="22" height="22">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+          </div>
+          <div className="loader-text-box">
+            <div className="loader-title">Loading Profile</div>
+            <div className="loader-progress-track">
+              <div className="loader-progress-bar"></div>
+            </div>
+          </div>
+        </div>
       </main>
     );
   }
@@ -632,10 +649,6 @@ export default function ProfileEditor() {
               </button>
             )}
           </div>
-
-          <p className="profile-hint">
-            Drag & drop an image or click to browse (JPEG, PNG, WebP up to 5MB)
-          </p>
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════════
@@ -742,6 +755,21 @@ export default function ProfileEditor() {
                 id="profile-instagram"
                 name="instagram_url"
                 type="url"
+              />
+            </div>
+
+            {/* ═════════════════════════════════════════════════════════════════
+                BIO TEXTBOX (Positioned above Skills section)
+                ═════════════════════════════════════════════════════════════════ */}
+            <div className="form-group profile-bio-field">
+              <label htmlFor="profile-bio">Bio</label>
+              <textarea
+                className="profile-textarea"
+                defaultValue={asInputValue(profile.bio)}
+                id="profile-bio"
+                name="bio"
+                placeholder="Share a short summary about yourself..."
+                rows={4}
               />
             </div>
 
@@ -962,7 +990,7 @@ export default function ProfileEditor() {
             </p>
           )}
 
-          <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginTop: "1rem" }}>
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center", justifyContent: "center", marginTop: "1.5rem" }}>
             <button className="btn btn-primary" disabled={isSaving} type="submit">
               {isSaving ? "Saving..." : "Save profile"}
             </button>

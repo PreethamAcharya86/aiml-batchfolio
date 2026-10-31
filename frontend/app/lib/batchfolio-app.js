@@ -2,7 +2,7 @@
  * AIML Batchfolio (2024-2028)
  * Main Application Logic
  */
-import { ApiService } from './api.js';
+import { ApiService, getLoggedInUser } from './api.js';
 
 class BatchfolioApp {
   constructor() {
@@ -225,10 +225,15 @@ class BatchfolioApp {
     this.studentsGrid.innerHTML = this.filteredStudents.map(student => `
       <article class="student-card" data-usn="${student.usn}" tabindex="0" role="button" aria-label="View profile of ${student.fullName}">
         
-        <!-- Dull hover effect visual cue tag -->
-        <div class="card-click-hint">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-          <span>Tap to Expand</span>
+        <!-- Hover Blur Overlay with Click Indication -->
+        <div class="card-hover-overlay">
+          <div class="card-hover-cue-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span>View Profile</span>
+          </div>
         </div>
 
         <!-- Student Avatar -->
@@ -249,24 +254,8 @@ class BatchfolioApp {
           <span class="card-usn-badge">${student.usn}</span>
           <p class="card-role">${student.role}</p>
 
-          <!-- Skills tags -->
-          <div class="card-skills-row">
-            ${student.skills.slice(0, 3).map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
-          </div>
-
-          <!-- Bottom Card Action Row -->
-          <div class="card-action-cue">
-            ${student.social.portfolio ? `
-              <a href="${student.social.portfolio}" target="_blank" rel="noopener" class="card-portfolio-pill" onclick="event.stopPropagation();" title="Visit Portfolio">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                Portfolio
-              </a>
-            ` : `<span class="card-batch-tag">Batch ${student.batch}</span>`}
-            <span class="card-view-btn">
-              View Profile
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
-            </span>
-          </div>
+          <!-- Student Bio (one-line truncation with ..., hidden if no bio) -->
+          ${student.bio && student.bio.trim() ? `<p class="card-bio">${student.bio.trim()}</p>` : ''}
         </div>
 
       </article>
@@ -295,6 +284,9 @@ class BatchfolioApp {
     const student = this.students.find(s => s.usn === usn);
     if (!student) return;
 
+    const loggedInUser = getLoggedInUser();
+    const isMyProfile = Boolean(loggedInUser?.usn && loggedInUser.usn.toUpperCase() === student.usn.toUpperCase());
+
     this.studentModalBody.innerHTML = `
       <!-- Enlarged Header -->
       <div class="enlarged-profile-header">
@@ -317,13 +309,15 @@ class BatchfolioApp {
       </div>
 
       <!-- Student Bio -->
-      <div class="modal-section-block">
-        <div class="modal-section-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-          Professional Summary
+      ${student.bio && student.bio.trim() ? `
+        <div class="modal-section-block">
+          <div class="modal-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Professional Summary
+          </div>
+          <p class="enlarged-bio">${student.bio.trim()}</p>
         </div>
-        <p class="enlarged-bio">${student.bio}</p>
-      </div>
+      ` : ''}
 
       <!-- Technical Skills Cloud -->
       <div class="modal-section-block">
@@ -385,10 +379,21 @@ class BatchfolioApp {
           ` : ''}
         </div>
 
-        <button class="btn btn-primary" onclick="window.batchfolioApp.downloadResume('${student.usn}', '${student.fullName}')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Download Resume</span>
-        </button>
+        <div class="enlarged-action-buttons">
+          ${isMyProfile ? `
+            <a href="/profile" class="edit-profile-action-btn" title="Edit your portfolio profile">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              <span>Edit Profile</span>
+            </a>
+          ` : ''}
+          <button class="btn btn-primary" onclick="window.batchfolioApp.downloadResume('${student.usn}', '${student.fullName}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Resume</span>
+          </button>
+        </div>
       </div>
     `;
 

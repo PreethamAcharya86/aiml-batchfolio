@@ -42,9 +42,30 @@ export function saveToken(token) {
 }
 export function clearToken() {
   sessionStorage.removeItem('batchfolio_token');
+  sessionStorage.removeItem('batchfolio_user');
 }
 export function getToken() {
   return sessionStorage.getItem('batchfolio_token') || null;
+}
+export function getLoggedInUser() {
+  try {
+    const raw = sessionStorage.getItem('batchfolio_user');
+    if (raw) return JSON.parse(raw);
+  } catch {}
+
+  const token = getToken();
+  if (!token) return null;
+  try {
+    const payloadBase64 = token.split('.')[1];
+    const decoded = JSON.parse(atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/')));
+    return {
+      usn: decoded.sub || null,
+      email: decoded.email || null,
+      id: decoded.id || null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 // ── Normalize a backend student row → frontend shape ─────────────────────────
@@ -62,7 +83,7 @@ function normalizeStudent(row) {
     role:     `${row.dept || 'Student'} Student`,
     category: row.dept === 'AIML' ? 'AI/ML' : row.dept,
     skills:   Array.isArray(row.skills) ? row.skills : [],
-    bio:      row.bio || 'No bio has been added yet.',
+    bio:      row.bio?.trim() || '',
     projects: [],
     social: {
       github:    row.github_url    || null,
@@ -124,6 +145,7 @@ export const ApiService = {
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Login failed');
     if (data.access_token) saveToken(data.access_token);
+    if (data.user) sessionStorage.setItem('batchfolio_user', JSON.stringify(data.user));
     return { success: true, ...data };
   },
 
@@ -138,6 +160,9 @@ export const ApiService = {
     if (!res.ok) {
       if (res.status === 401) clearToken();
       throw new Error(data.detail || 'Failed to load profile');
+    }
+    if (data.usn) {
+      sessionStorage.setItem('batchfolio_user', JSON.stringify({ name: data.name, usn: data.usn, id: data.id }));
     }
     return data;
   },
