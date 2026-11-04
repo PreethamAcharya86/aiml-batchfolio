@@ -1062,7 +1062,6 @@ function ProfileInlineOtp({
 }) {
   const [otp, setOtp] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
-  const [devOtp, setDevOtp] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState("");
@@ -1077,7 +1076,6 @@ function ProfileInlineOtp({
       const res = await ApiService.sendOtp();
       setMaskedEmail(res.masked_email || "your registered email");
       setNotice(`Verification code sent to ${res.masked_email || "your email"}`);
-      if (res.dev_otp) setDevOtp(res.dev_otp);
       setCooldown(30);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to send verification code.");
@@ -1136,12 +1134,6 @@ function ProfileInlineOtp({
       {notice && !error && (
         <div style={{ padding: "0.6rem 0.85rem", background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.3)", borderRadius: "8px", color: "#34d399", fontSize: "0.82rem", marginBottom: "1.25rem", textAlign: "center" }}>
           {notice}
-        </div>
-      )}
-
-      {devOtp && (
-        <div style={{ padding: "0.5rem 0.75rem", background: "rgba(234, 179, 8, 0.12)", border: "1px dashed rgba(234, 179, 8, 0.4)", borderRadius: "8px", color: "#facc15", fontSize: "0.8rem", marginBottom: "1.25rem", textAlign: "center", fontFamily: "monospace" }}>
-          Local test code: <strong>{devOtp}</strong>
         </div>
       )}
 

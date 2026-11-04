@@ -16,7 +16,6 @@ export default function OtpVerificationModal({
 }: OtpModalProps) {
   const [otp, setOtp] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
-  const [devOtp, setDevOtp] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState("");
@@ -29,7 +28,6 @@ export default function OtpVerificationModal({
       setOtp("");
       setError("");
       setNotice("");
-      setDevOtp(null);
       return;
     }
 
@@ -64,9 +62,6 @@ export default function OtpVerificationModal({
       const result = await ApiService.sendOtp();
       setMaskedEmail(result.masked_email || "your registered email");
       setNotice(`Verification code sent to ${result.masked_email || "your email"}`);
-      if (result.dev_otp) {
-        setDevOtp(result.dev_otp);
-      }
       setResendCooldown(30);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to send verification code.");
@@ -153,24 +148,6 @@ export default function OtpVerificationModal({
             }}
           >
             {notice}
-          </div>
-        )}
-
-        {devOtp && (
-          <div
-            style={{
-              padding: "0.5rem 0.75rem",
-              background: "rgba(234, 179, 8, 0.12)",
-              border: "1px dashed rgba(234, 179, 8, 0.4)",
-              borderRadius: "8px",
-              color: "#facc15",
-              fontSize: "0.8rem",
-              marginBottom: "1.25rem",
-              textAlign: "center",
-              fontFamily: "monospace",
-            }}
-          >
-            Local test code: <strong>{devOtp}</strong>
           </div>
         )}
 

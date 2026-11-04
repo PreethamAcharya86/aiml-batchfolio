@@ -4,6 +4,7 @@ Sends branded OTP emails via SMTP or logs them in development mode.
 """
 import logging
 import smtplib
+import re
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from config import (
@@ -133,24 +134,39 @@ def send_otp_email(to_email: str, student_name: str, otp: str) -> dict:
         f"If you did not request this, please ignore this email.\n"
     )
 
+    clean_host = SMTP_HOST.strip().strip('"').strip("'")
+    clean_user = SMTP_USER.strip().strip('"').strip("'")
+    clean_password = SMTP_PASSWORD.strip().strip('"').strip("'")
+    clean_from_raw = SMTP_FROM.strip().strip('"').strip("'") if SMTP_FROM else clean_user
+    clean_port = int(SMTP_PORT) if str(SMTP_PORT).isdigit() else 587
+
     # If SMTP is configured, attempt actual network delivery
-    if SMTP_HOST and SMTP_USER and SMTP_PASSWORD:
+    if clean_host and clean_user and clean_password:
         try:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
-            msg["From"] = SMTP_FROM
-            msg["To"] = to_email
+            msg["From"] = clean_from_raw or clean_user
+            msg["To"] = to_email.strip()
 
             part1 = MIMEText(text_content, "plain")
             part2 = MIMEText(html_content, "html")
             msg.attach(part1)
             msg.attach(part2)
 
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=12) as server:
+            # Extract pure email address for the envelope sender (RFC 5321 requires pure address)
+            envelope_match = re.search(r"<([^>]+)>", clean_from_raw)
+            envelope_sender = envelope_match.group(1).strip() if envelope_match else clean_user
+
+            if clean_port == 465:
+                server = smtplib.SMTP_SSL(clean_host, clean_port, timeout=15)
+            else:
+                server = smtplib.SMTP(clean_host, clean_port, timeout=15)
                 if SMTP_TLS:
                     server.starttls()
-                server.login(SMTP_USER, SMTP_PASSWORD)
-                server.sendmail(SMTP_FROM, [to_email], msg.as_string())
+
+            with server:
+                server.login(clean_user, clean_password)
+                server.sendmail(envelope_sender, [to_email.strip()], msg.as_string())
 
             logger.info("Sent verification email to %s", mask_email(to_email))
             return {"sent": True, "method": "smtp", "masked_email": mask_email(to_email)}
@@ -161,4 +177,3 @@ def send_otp_email(to_email: str, student_name: str, otp: str) -> dict:
     # Fallback / Dev mode: print to console for instant developer verification
     print(f"\n[OTP SERVICE] Verification OTP for {student_name} ({to_email}): >>> {otp} <<<\n", flush=True)
     return {"sent": True, "method": "local_dev", "masked_email": mask_email(to_email)}
-

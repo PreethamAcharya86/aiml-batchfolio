@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
-load_dotenv()
+load_dotenv(override=True)
 
 SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
 SUPABASE_SECRET_KEY: str = os.getenv("SUPABASE_SECRET_KEY", "")

@@ -39,17 +39,11 @@ def create_and_send_otp(usn: str, email: str, student_name: str) -> dict:
 
     delivery_result = send_otp_email(clean_email, student_name, otp)
 
-    response = {
+    return {
         "status": "ok",
         "message": f"Verification code sent to {mask_email(clean_email)}",
         "masked_email": mask_email(clean_email),
     }
-
-    # If in local dev or SMTP not set, include the OTP in the payload for friction-free testing
-    if delivery_result.get("method") == "local_dev":
-        response["dev_otp"] = otp
-
-    return response
 
 
 def verify_otp(usn: str, candidate_otp: str) -> Tuple[bool, str]:

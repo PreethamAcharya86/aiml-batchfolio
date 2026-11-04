@@ -258,7 +258,10 @@ def send_otp(current_user: dict = Depends(get_current_student)):
             detail="Your profile does not have an email address configured. Please update your profile with your email first.",
         )
 
-    return create_and_send_otp(usn, str(email).strip(), student.get("name") or "Student")
+    try:
+        return create_and_send_otp(usn, str(email).strip(), student.get("name") or "Student")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/api/auth/verify-otp", tags=["Auth"])
