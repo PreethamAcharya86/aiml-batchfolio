@@ -137,24 +137,12 @@ class BatchfolioApp {
       if (e.target === this.studentModal) this.closeModal(this.studentModal);
     });
 
-    // Resumes Modal Triggers
-    this.navResumesBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.openModal(this.resumesModal);
-    });
-    if (this.footerResumesLink) {
-      this.footerResumesLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.openModal(this.resumesModal);
+    // Resumes nav — navigate to dedicated /resumes page
+    if (this.navResumesBtn) {
+      this.navResumesBtn.addEventListener('click', (e) => {
+        // Link handles navigation; nothing extra needed
       });
     }
-    this.closeResumesModalBtn.addEventListener('click', () => this.closeModal(this.resumesModal));
-    this.resumesModal.addEventListener('click', (e) => {
-      if (e.target === this.resumesModal) this.closeModal(this.resumesModal);
-    });
-    this.resumesFilterInput.addEventListener('input', (e) => {
-      this.renderResumesList(e.target.value.toLowerCase().trim());
-    });
 
     // Global keyboard listener (Escape to close any modal)
     document.addEventListener('keydown', (e) => {
@@ -423,7 +411,20 @@ class BatchfolioApp {
   }
 
   downloadResume(usn, name) {
-    this.showToast(`Downloading verified resume for ${name} (${usn})...`, 'success');
+    const student = this.students.find(s => s.usn === usn);
+    if (student && student.resumeUrl) {
+      const a = document.createElement('a');
+      a.href = student.resumeUrl;
+      a.download = `${usn}_${name.replace(/\s+/g, '_')}_Resume.pdf`;
+      a.target = '_blank';
+      a.rel = 'noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      this.showToast(`Opening / Downloading resume for ${name}...`, 'success');
+    } else {
+      this.showToast(`No verified resume uploaded for ${name} (${usn}) yet.`, 'error');
+    }
   }
 
   /**

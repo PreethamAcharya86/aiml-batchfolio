@@ -83,7 +83,7 @@ export default function HomePage() {
               {"\n          Search\n        "}
             </a>
             {"\n        "}
-            <a href="#resumes" className="nav-item" id="nav-btn-resumes">
+            <Link href="/resumes" className="nav-item" id="nav-btn-resumes">
               {"\n          "}
               <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -93,7 +93,7 @@ export default function HomePage() {
                 <polyline points="10 9 9 9 8 9"></polyline>
               </svg>
               {"\n          Resumes\n        "}
-            </a>
+            </Link>
             {"\n      "}
           </nav>
           {"\n\n      "}
@@ -506,7 +506,7 @@ export default function HomePage() {
               </li>
               {"\n          "}
               <li>
-                <a href="#resumes" id="footer-resumes-link">{"Resume Vault"}</a>
+                <Link href="/resumes" id="footer-resumes-link">{"Resume Vault"}</Link>
               </li>
               {"\n          "}
               <li>
