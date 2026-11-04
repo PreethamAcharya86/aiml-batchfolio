@@ -4,6 +4,7 @@ Sends branded OTP emails via SMTP or logs them in development mode.
 """
 import logging
 import smtplib
+import socket
 import re
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -30,6 +31,32 @@ def mask_email(email: str) -> str:
     else:
         masked_local = local_part[0] + "***" + local_part[-1]
     return f"{masked_local}@{domain}"
+
+
+def _dispatch_smtp(host: str, port: int, user: str, password: str, envelope_sender: str, recipient: str, message_str: str, use_tls: bool):
+    """
+    Dispatch message via SMTP, forcing IPv4 to prevent '[Errno 101] Network is unreachable'
+    on cloud environments like Render that lack IPv6 outbound routing.
+    """
+    orig_getaddrinfo = socket.getaddrinfo
+
+    def ipv4_getaddrinfo(h, p, family=0, type=0, proto=0, flags=0):
+        return orig_getaddrinfo(h, p, socket.AF_INET, type, proto, flags)
+
+    socket.getaddrinfo = ipv4_getaddrinfo
+    try:
+        if port == 465:
+            server = smtplib.SMTP_SSL(host, port, timeout=15)
+        else:
+            server = smtplib.SMTP(host, port, timeout=15)
+            if use_tls:
+                server.starttls()
+
+        with server:
+            server.login(user, password)
+            server.sendmail(envelope_sender, [recipient], message_str)
+    finally:
+        socket.getaddrinfo = orig_getaddrinfo
 
 
 def send_otp_email(to_email: str, student_name: str, otp: str) -> dict:
@@ -153,20 +180,19 @@ def send_otp_email(to_email: str, student_name: str, otp: str) -> dict:
             msg.attach(part1)
             msg.attach(part2)
 
-            # Extract pure email address for the envelope sender (RFC 5321 requires pure address)
+            # Pure email address for the RFC-5321 envelope sender
             envelope_match = re.search(r"<([^>]+)>", clean_from_raw)
             envelope_sender = envelope_match.group(1).strip() if envelope_match else clean_user
 
-            if clean_port == 465:
-                server = smtplib.SMTP_SSL(clean_host, clean_port, timeout=15)
-            else:
-                server = smtplib.SMTP(clean_host, clean_port, timeout=15)
-                if SMTP_TLS:
-                    server.starttls()
-
-            with server:
-                server.login(clean_user, clean_password)
-                server.sendmail(envelope_sender, [to_email.strip()], msg.as_string())
+            try:
+                _dispatch_smtp(clean_host, clean_port, clean_user, clean_password, envelope_sender, to_email.strip(), msg.as_string(), SMTP_TLS)
+            except Exception as primary_err:
+                # If port 587 fails with network issue, try SSL on port 465 as backup
+                if clean_port == 587 and ("unreachable" in str(primary_err).lower() or "timeout" in str(primary_err).lower()):
+                    logger.warning("Port 587 failed, attempting backup SSL port 465...")
+                    _dispatch_smtp(clean_host, 465, clean_user, clean_password, envelope_sender, to_email.strip(), msg.as_string(), False)
+                else:
+                    raise primary_err
 
             logger.info("Sent verification email to %s", mask_email(to_email))
             return {"sent": True, "method": "smtp", "masked_email": mask_email(to_email)}
