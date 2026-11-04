@@ -7,7 +7,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from config import SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM
+from config import BREVO_API_KEY, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM
 from email_service import send_otp_email
 
 if len(sys.argv) < 2:
@@ -19,6 +19,7 @@ recipient = sys.argv[1].strip()
 print("=" * 60)
 print("AIML BATCHFOLIO — EMAIL DISPATCH TEST")
 print("=" * 60)
+print(f"Brevo API Key: {'[CONFIGURED]' if BREVO_API_KEY else '[NOT SET]'}")
 print(f"SMTP Host:     {SMTP_HOST or '[NOT SET]'}")
 print(f"SMTP Port:     {SMTP_PORT}")
 print(f"SMTP User:     {SMTP_USER or '[NOT SET]'}")

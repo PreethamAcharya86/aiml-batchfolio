@@ -6,9 +6,7 @@
 import { BATCH_INFO } from './students-data.js';
 
 const configuredApiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
-if (process.env.NODE_ENV === 'production' && !configuredApiBase) {
-  throw new Error('NEXT_PUBLIC_API_BASE_URL must be set to the deployed API URL.');
-}
+
 
 const API_BASE = (configuredApiBase || 'http://127.0.0.1:8001/api').replace(/\/+$/, '');
 const TIMEOUT_MS = 10000;

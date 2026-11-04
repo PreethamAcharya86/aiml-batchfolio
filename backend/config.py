@@ -34,10 +34,11 @@ if not JWT_SECRET:
 JWT_ALGORITHM: str = "HS256"
 JWT_EXPIRE_HOURS: int = 24
 
-# SMTP Email Configuration (for OTP delivery)
-SMTP_HOST: str = os.getenv("SMTP_HOST", "")
-SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER: str = os.getenv("SMTP_USER", "")
-SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
-SMTP_FROM: str = os.getenv("SMTP_FROM", os.getenv("SMTP_USER", "no-reply@aiml-batchfolio.edu"))
+# Email Delivery Configuration (Brevo HTTPS REST API for production & SMTP for local dev)
+BREVO_API_KEY: str = os.getenv("BREVO_API_KEY", "").strip().strip('"').strip("'")
+SMTP_HOST: str = os.getenv("SMTP_HOST", "").strip().strip('"').strip("'")
+SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587")) if os.getenv("SMTP_PORT", "587").strip().isdigit() else 587
+SMTP_USER: str = os.getenv("SMTP_USER", "").strip().strip('"').strip("'")
+SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "").strip().strip('"').strip("'")
+SMTP_FROM: str = os.getenv("SMTP_FROM", os.getenv("SMTP_USER", "AIML Batchfolio <batchfolio@gmail.com>")).strip().strip('"').strip("'")
 SMTP_TLS: bool = os.getenv("SMTP_TLS", "true").casefold() in ("true", "1", "yes")
