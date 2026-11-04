@@ -82,18 +82,14 @@ class BatchfolioApp {
       this.studentsGrid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
           <div style="font-size: 2.5rem; margin-bottom: 1rem;">⚡</div>
-          <h3 style="font-size: 1.5rem; color: #f1f5f9; margin-bottom: 0.5rem;">Backend Offline</h3>
+          <h3 style="font-size: 1.5rem; color: #f1f5f9; margin-bottom: 0.5rem;">Could not load students</h3>
           <p style="color: #94a3b8; font-size: 0.95rem; max-width: 480px; margin: 0 auto 1.5rem;">
-            Could not reach the API server at <code style="color:#67e8f9;">localhost:8000</code>.
-            Please start the backend:<br><br>
-            <code style="background: rgba(99,102,241,0.15); padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.9rem;">
-              backend\\venv\\Scripts\\uvicorn main:app --reload --port 8000
-            </code>
+            Unable to reach the API server. Please check your connection or try again.
           </p>
-          <button class="btn btn-outline" onclick="window.batchfolioApp.loadData()">↺ Retry Connection</button>
+          <button class="btn btn-outline" onclick="window.batchfolioApp.loadData()">&#8635; Retry</button>
         </div>
       `;
-      this.showToast('⚡ Backend offline — start the FastAPI server', 'error');
+      this.showToast('Could not load student data', 'error');
     }
   }
 
