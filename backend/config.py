@@ -33,3 +33,11 @@ if not JWT_SECRET:
     JWT_SECRET = "local-development-only-aiml-batchfolio-secret"
 JWT_ALGORITHM: str = "HS256"
 JWT_EXPIRE_HOURS: int = 24
+
+# SMTP Email Configuration (for OTP delivery)
+SMTP_HOST: str = os.getenv("SMTP_HOST", "")
+SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER: str = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+SMTP_FROM: str = os.getenv("SMTP_FROM", os.getenv("SMTP_USER", "no-reply@aiml-batchfolio.edu"))
+SMTP_TLS: bool = os.getenv("SMTP_TLS", "true").casefold() in ("true", "1", "yes")

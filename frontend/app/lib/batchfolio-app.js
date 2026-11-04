@@ -2,7 +2,7 @@
  * AIML Batchfolio (2024-2028)
  * Main Application Logic
  */
-import { ApiService, getLoggedInUser } from './api.js';
+import { ApiService, getLoggedInUser, isOtpVerified } from './api.js';
 
 class BatchfolioApp {
   constructor() {
@@ -365,13 +365,13 @@ class BatchfolioApp {
 
         <div class="enlarged-action-buttons">
           ${isMyProfile ? `
-            <a href="/profile" class="edit-profile-action-btn" title="Edit your portfolio profile">
+            <button class="edit-profile-action-btn" type="button" onclick="window.batchfolioApp.handleEditProfileClick()" title="Edit your portfolio profile">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
               </svg>
               <span>Edit Profile</span>
-            </a>
+            </button>
           ` : ''}
           <button class="btn btn-primary" onclick="window.batchfolioApp.downloadResume('${student.usn}', '${student.fullName}')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -408,6 +408,16 @@ class BatchfolioApp {
         </button>
       </div>
     `).join('');
+  }
+
+  handleEditProfileClick() {
+    this.closeModal(this.studentModal);
+    const user = getLoggedInUser();
+    if (!user || !user.email || isOtpVerified()) {
+      window.location.href = '/profile';
+    } else {
+      window.dispatchEvent(new Event('batchfolio:open-otp-verification'));
+    }
   }
 
   downloadResume(usn, name) {

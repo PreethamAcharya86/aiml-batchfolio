@@ -24,12 +24,14 @@ import os
 from storage3.utils import StorageException
 
 from config import PROFILE_PICTURES_BUCKET, RESUMES_BUCKET, supabase
-from schemas import LoginRequest, StudentUpdateRequest
+from schemas import LoginRequest, StudentUpdateRequest, VerifyOtpRequest
 from auth import (
     create_access_token,
     get_current_student,
     decode_token,
 )
+from otp_service import create_and_send_otp, verify_otp
+from email_service import mask_email
 
 app = FastAPI(
     title="AIML Batchfolio API",
@@ -230,6 +232,51 @@ def login(body: LoginRequest):
     }
 
 
+@app.post("/api/auth/send-otp", tags=["Auth"])
+def send_otp(current_user: dict = Depends(get_current_student)):
+    """
+    Generate and email a 6-digit verification code to the student's registered email.
+    """
+    usn = current_user.get("sub")
+    if not isinstance(usn, str) or not usn:
+        raise HTTPException(status_code=401, detail="Invalid authentication token")
+
+    res = (
+        supabase.table("student")
+        .select("name, usn, email")
+        .eq("usn", usn.upper())
+        .execute()
+    )
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Student record not found")
+
+    student = res.data[0]
+    email = student.get("email")
+    if not email or not str(email).strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Your profile does not have an email address configured. Please update your profile with your email first.",
+        )
+
+    return create_and_send_otp(usn, str(email).strip(), student.get("name") or "Student")
+
+
+@app.post("/api/auth/verify-otp", tags=["Auth"])
+def verify_student_otp(body: VerifyOtpRequest, current_user: dict = Depends(get_current_student)):
+    """
+    Verify the 6-digit code for the authenticated student.
+    """
+    usn = current_user.get("sub")
+    if not isinstance(usn, str) or not usn:
+        raise HTTPException(status_code=401, detail="Invalid authentication token")
+
+    success, message = verify_otp(usn, body.otp)
+    if not success:
+        raise HTTPException(status_code=400, detail=message)
+
+    return {"verified": True, "message": message}
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # STUDENTS: LIST ALL
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -328,6 +375,8 @@ def update_student(
         raise HTTPException(status_code=400, detail="No fields to update")
     if "name" in updates and not updates["name"]:
         raise HTTPException(status_code=422, detail="Name cannot be empty")
+    if "email" in updates and (not updates["email"] or not str(updates["email"]).strip()):
+        raise HTTPException(status_code=422, detail="Email is required and cannot be empty")
     if "dob" in updates and updates["dob"] is None:
         raise HTTPException(status_code=422, detail="Date of birth cannot be empty")
     if "skills" in updates and updates["skills"] is None:

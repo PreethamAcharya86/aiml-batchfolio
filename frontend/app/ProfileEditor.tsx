@@ -11,7 +11,7 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import { ApiService, clearToken, getToken } from "./lib/api.js";
+import { ApiService, clearToken, getToken, isOtpVerified, setOtpVerified } from "./lib/api.js";
 
 type StudentProfile = {
   id: number;
@@ -121,6 +121,11 @@ export default function ProfileEditor() {
 
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [isOtpVerifiedState, setIsOtpVerifiedState] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsOtpVerifiedState(isOtpVerified());
+  }, []);
 
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const resumeInputRef = useRef<HTMLInputElement | null>(null);
@@ -403,6 +408,12 @@ export default function ProfileEditor() {
     setIsSaving(true);
 
     const formData = new FormData(event.currentTarget);
+    const emailVal = String(formData.get("email") ?? "").trim();
+    if (!emailVal) {
+      setError("Email address is required. Please provide a valid email.");
+      setIsSaving(false);
+      return;
+    }
     const updates = {
       name: String(formData.get("name") ?? "").trim(),
       email: String(formData.get("email") ?? "").trim() || null,
@@ -489,6 +500,19 @@ export default function ProfileEditor() {
     );
   }
 
+  if (profile.email && !isOtpVerifiedState) {
+    return (
+      <main className="profile-page">
+        <section className="profile-panel" style={{ maxWidth: "500px", margin: "2rem auto" }}>
+          <ProfileInlineOtp
+            studentName={profile.name}
+            onVerified={() => setIsOtpVerifiedState(true)}
+          />
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="profile-page">
       <section className="profile-panel">
@@ -509,6 +533,30 @@ export default function ProfileEditor() {
             </button>
           </div>
         </div>
+
+        {!profile.email && (
+          <div
+            style={{
+              padding: "1rem 1.25rem",
+              background: "rgba(234, 179, 8, 0.12)",
+              border: "1px solid rgba(234, 179, 8, 0.4)",
+              borderRadius: "12px",
+              color: "#facc15",
+              margin: "1.5rem 0",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.85rem",
+            }}
+          >
+            <span style={{ fontSize: "1.5rem" }}>⚠️</span>
+            <div>
+              <strong style={{ display: "block", fontSize: "0.95rem" }}>Email Address Required</strong>
+              <p style={{ margin: "2px 0 0", fontSize: "0.85rem", color: "#fef08a" }}>
+                You must enter and save your valid email address below to enable OTP verification for your account.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* ═══════════════════════════════════════════════════════════════════════
             TOP CENTER: PROFILE PICTURE DRAG & DROP / UPLOAD
@@ -704,14 +752,27 @@ export default function ProfileEditor() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="profile-email">Email</label>
+              <label htmlFor="profile-email">
+                Email Address <span style={{ color: "#ef4444" }}>*</span>
+              </label>
               <input
                 className="profile-input"
                 defaultValue={asInputValue(profile.email)}
                 id="profile-email"
                 name="email"
                 type="email"
+                required
+                placeholder="e.g. yourname@gmail.com"
               />
+              {!profile.email ? (
+                <p className="profile-hint" style={{ color: "#facc15" }}>
+                  ⚠️ Email is required to enable secure login verification for your account.
+                </p>
+              ) : (
+                <p className="profile-hint">
+                  Your registered email used for OTP security verification.
+                </p>
+              )}
             </div>
 
             <div className="form-group">
@@ -987,5 +1048,166 @@ export default function ProfileEditor() {
         </form>
       </section>
     </main>
+  );
+}
+
+
+/* ── In-page OTP Verification Card (Used when accessing /profile directly) ── */
+function ProfileInlineOtp({
+  studentName,
+  onVerified,
+}: {
+  studentName: string;
+  onVerified: () => void;
+}) {
+  const [otp, setOtp] = useState("");
+  const [maskedEmail, setMaskedEmail] = useState("");
+  const [devOtp, setDevOtp] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [cooldown, setCooldown] = useState(0);
+
+  const sendOtpCode = async () => {
+    setIsSending(true);
+    setError("");
+    setNotice("");
+    try {
+      const res = await ApiService.sendOtp();
+      setMaskedEmail(res.masked_email || "your registered email");
+      setNotice(`Verification code sent to ${res.masked_email || "your email"}`);
+      if (res.dev_otp) setDevOtp(res.dev_otp);
+      setCooldown(30);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to send verification code.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  useEffect(() => {
+    void sendOtpCode();
+  }, []);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setInterval(() => setCooldown((c) => c - 1), 1000);
+    return () => clearInterval(t);
+  }, [cooldown]);
+
+  const handleVerify = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!otp.trim()) {
+      setError("Please enter the 6-digit verification code.");
+      return;
+    }
+    setIsVerifying(true);
+    setError("");
+    try {
+      await ApiService.verifyOtp(otp.trim());
+      setOtpVerified(true);
+      onVerified();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Invalid or expired code.");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="auth-header" style={{ marginBottom: "1.75rem" }}>
+        <div className="auth-logo-badge" style={{ background: "rgba(99, 102, 241, 0.15)", borderColor: "rgba(99, 102, 241, 0.4)" }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2" width="28" height="28">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        </div>
+        <h2 className="auth-title" style={{ fontSize: "1.45rem" }}>
+          Verify Your Identity
+        </h2>
+        <p className="auth-subtitle" style={{ fontSize: "0.88rem", marginTop: "0.35rem" }}>
+          Hello <strong>{studentName}</strong>, enter the 6-digit code sent to{" "}
+          <strong style={{ color: "#67e8f9" }}>{maskedEmail || "your email"}</strong> to unlock profile editing.
+        </p>
+      </div>
+
+      {notice && !error && (
+        <div style={{ padding: "0.6rem 0.85rem", background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.3)", borderRadius: "8px", color: "#34d399", fontSize: "0.82rem", marginBottom: "1.25rem", textAlign: "center" }}>
+          {notice}
+        </div>
+      )}
+
+      {devOtp && (
+        <div style={{ padding: "0.5rem 0.75rem", background: "rgba(234, 179, 8, 0.12)", border: "1px dashed rgba(234, 179, 8, 0.4)", borderRadius: "8px", color: "#facc15", fontSize: "0.8rem", marginBottom: "1.25rem", textAlign: "center", fontFamily: "monospace" }}>
+          Local test code: <strong>{devOtp}</strong>
+        </div>
+      )}
+
+      <form onSubmit={handleVerify} className="auth-form">
+        <div className="form-group">
+          <label htmlFor="inline-otp-input" style={{ textAlign: "center", display: "block" }}>
+            One-Time Password (OTP)
+          </label>
+          <input
+            id="inline-otp-input"
+            type="text"
+            inputMode="numeric"
+            maxLength={6}
+            autoComplete="one-time-code"
+            placeholder="••••••"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+            style={{
+              fontFamily: "monospace",
+              fontSize: "1.8rem",
+              letterSpacing: "0.45em",
+              textAlign: "center",
+              padding: "0.75rem 0.5rem",
+              borderRadius: "10px",
+              border: "1px solid rgba(99, 102, 241, 0.45)",
+              background: "rgba(10, 14, 26, 0.85)",
+              color: "#67e8f9",
+              width: "100%",
+            }}
+            autoFocus
+          />
+        </div>
+
+        {error && (
+          <p className="login-error" role="alert" style={{ marginTop: "0.5rem", marginBottom: "0.75rem" }}>
+            {error}
+          </p>
+        )}
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "1.25rem" }}>
+          <button
+            className="btn btn-primary"
+            type="submit"
+            disabled={isVerifying || otp.length < 6}
+            style={{ width: "100%", padding: "0.75rem", justifyContent: "center" }}
+          >
+            {isVerifying ? "Verifying..." : "Verify & Unlock Profile"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={sendOtpCode}
+            disabled={isSending || cooldown > 0}
+            style={{ width: "100%", padding: "0.55rem", justifyContent: "center", fontSize: "0.82rem", border: "1px solid rgba(255, 255, 255, 0.12)", color: "var(--text-muted)" }}
+          >
+            {isSending ? "Sending code..." : cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend code"}
+          </button>
+          <Link
+            className="btn btn-secondary"
+            href="/"
+            style={{ width: "100%", padding: "0.55rem", justifyContent: "center", fontSize: "0.82rem", textAlign: "center" }}
+          >
+            Cancel &amp; Return to Home
+          </Link>
+        </div>
+      </form>
+    </div>
   );
 }

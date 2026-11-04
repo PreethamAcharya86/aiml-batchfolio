@@ -19,6 +19,10 @@ class TokenResponse(BaseModel):
     user: dict
 
 
+class VerifyOtpRequest(BaseModel):
+    otp: str = Field(..., min_length=4, max_length=10)
+
+
 # ── Student Update Schema ──────────────────────────────────────────────────────
 
 class StudentUpdateRequest(BaseModel):

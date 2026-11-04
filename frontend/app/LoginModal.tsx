@@ -73,6 +73,9 @@ export default function LoginModal({ onLoginSuccess }: LoginModalProps) {
       setIsOpen(false);
       setUsn("");
       setDob("");
+      if (!result.user.email || !result.user.email.trim()) {
+        window.location.href = "/profile";
+      }
     } catch (loginError) {
       setError(
         loginError instanceof Error ? loginError.message : "Login failed. Please try again.",

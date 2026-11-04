@@ -36,18 +36,37 @@ async function apiFetch(path, options = {}) {
   }
 }
 
-// ── Token helpers ─────────────────────────────────────────────────────────────
+// ── Token & Session helpers (SSR Safe) ────────────────────────────────────────
 export function saveToken(token) {
-  sessionStorage.setItem('batchfolio_token', token);
+  if (typeof window !== 'undefined') {
+    sessionStorage.setItem('batchfolio_token', token);
+  }
 }
 export function clearToken() {
-  sessionStorage.removeItem('batchfolio_token');
-  sessionStorage.removeItem('batchfolio_user');
+  if (typeof window !== 'undefined') {
+    sessionStorage.removeItem('batchfolio_token');
+    sessionStorage.removeItem('batchfolio_user');
+    sessionStorage.removeItem('batchfolio_otp_verified');
+  }
 }
 export function getToken() {
+  if (typeof window === 'undefined') return null;
   return sessionStorage.getItem('batchfolio_token') || null;
 }
+export function isOtpVerified() {
+  if (typeof window === 'undefined') return false;
+  return sessionStorage.getItem('batchfolio_otp_verified') === 'true';
+}
+export function setOtpVerified(verified = true) {
+  if (typeof window === 'undefined') return;
+  if (verified) {
+    sessionStorage.setItem('batchfolio_otp_verified', 'true');
+  } else {
+    sessionStorage.removeItem('batchfolio_otp_verified');
+  }
+}
 export function getLoggedInUser() {
+  if (typeof window === 'undefined') return null;
   try {
     const raw = sessionStorage.getItem('batchfolio_user');
     if (raw) return JSON.parse(raw);
@@ -249,6 +268,43 @@ export const ApiService = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed to delete profile');
+    return data;
+  },
+
+  /** POST /api/auth/send-otp - send 6-digit OTP to student's email */
+  async sendOtp() {
+    const token = getToken();
+    if (!token) throw new Error('Authentication required. Please log in.');
+    const res = await apiFetch('/auth/send-otp', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.detail || 'Failed to send OTP verification code.');
+    }
+    return data;
+  },
+
+  /** POST /api/auth/verify-otp - verify 6-digit OTP */
+  async verifyOtp(otp) {
+    const token = getToken();
+    if (!token) throw new Error('Authentication required. Please log in.');
+    const res = await apiFetch('/auth/verify-otp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ otp: String(otp).trim() }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.detail || 'Invalid or expired verification code.');
+    }
+    setOtpVerified(true);
     return data;
   },
 };

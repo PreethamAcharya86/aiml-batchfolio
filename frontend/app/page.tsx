@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import LoginModal from "./LoginModal";
-import { ApiService, getToken } from "./lib/api.js";
+import OtpVerificationModal from "./OtpVerificationModal";
+import { ApiService, getToken, isOtpVerified } from "./lib/api.js";
 
 export default function HomePage() {
-  const [currentUser, setCurrentUser] = useState<{ name: string; usn: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ name: string; usn: string; email?: string | null } | null>(null);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
 
   useEffect(() => {
     void import("./lib/batchfolio-app.js")
@@ -15,11 +17,17 @@ export default function HomePage() {
 
     if (getToken()) {
       void ApiService.getMyProfile()
-        .then((profile) => setCurrentUser({ name: profile.name, usn: profile.usn }))
+        .then((profile) => setCurrentUser({ name: profile.name, usn: profile.usn, email: profile.email }))
         .catch((error) => {
           console.error("Could not restore the logged-in student:", error);
         });
     }
+
+    const handleOtpRequest = () => setIsOtpModalOpen(true);
+    window.addEventListener("batchfolio:open-otp-verification", handleOtpRequest);
+    return () => {
+      window.removeEventListener("batchfolio:open-otp-verification", handleOtpRequest);
+    };
   }, []);
 
   function openLogin() {
@@ -101,9 +109,17 @@ export default function HomePage() {
           <div className="nav-actions">
             {"\n        "}
             {currentUser ? (
-              <Link
+              <a
                 className="btn btn-primary profile-user-btn"
                 href="/profile"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (!currentUser.email || isOtpVerified()) {
+                    window.location.href = "/profile";
+                  } else {
+                    setIsOtpModalOpen(true);
+                  }
+                }}
                 aria-label={`Edit profile for ${currentUser.name}`}
               >
                 <span className="profile-avatar-mini" aria-hidden="true">
@@ -113,7 +129,7 @@ export default function HomePage() {
                   </svg>
                 </span>
                 <span>{currentUser.name}</span>
-              </Link>
+              </a>
             ) : (
               <>
                 <button className="profile-icon-btn" id="nav-profile-btn" title="Student Login" aria-label="Open User Login" onClick={openLogin}>
@@ -400,9 +416,21 @@ export default function HomePage() {
       {"\n\n  "}
       {"\n  "}
       <LoginModal
-        onLoginSuccess={(user) =>
-          setCurrentUser({ name: user.name, usn: user.usn })
-        }
+        onLoginSuccess={(user) => {
+          setCurrentUser({ name: user.name, usn: user.usn, email: user.email });
+          if (!user.email || !user.email.trim()) {
+            window.location.href = "/profile";
+          }
+        }}
+      />
+
+      <OtpVerificationModal
+        isOpen={isOtpModalOpen}
+        onClose={() => setIsOtpModalOpen(false)}
+        onSuccess={() => {
+          setIsOtpModalOpen(false);
+          window.location.href = "/profile";
+        }}
       />
 
       <div className="modal-backdrop" id="resumes-modal" aria-hidden="true" role="dialog">
