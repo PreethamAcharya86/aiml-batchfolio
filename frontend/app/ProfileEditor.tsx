@@ -966,17 +966,6 @@ export default function ProfileEditor() {
                 </div>
               )}
             </div>
-
-            <div className="form-group profile-bio-field">
-              <label htmlFor="profile-bio">Bio</label>
-              <textarea
-                className="profile-textarea"
-                defaultValue={asInputValue(profile.bio)}
-                id="profile-bio"
-                name="bio"
-                rows={5}
-              />
-            </div>
           </div>
 
           {error && (
