@@ -6,6 +6,7 @@ import {
   DragEvent,
   FormEvent,
   KeyboardEvent,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -119,6 +120,9 @@ export default function ProfileEditor() {
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
   const [isDraggingResume, setIsDraggingResume] = useState(false);
 
+  // Crop modal state
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [isOtpVerifiedState, setIsOtpVerifiedState] = useState<boolean>(false);
@@ -229,7 +233,8 @@ export default function ProfileEditor() {
   );
 
   // ── Avatar Upload Handlers ──────────────────────────────────────────────────
-  async function handleAvatarFile(file: File) {
+  // Opens the crop modal; actual upload happens after the user confirms the crop
+  function handleAvatarFile(file: File) {
     if (!profile) return;
     if (!file.type.startsWith("image/")) {
       setError("Please select a valid image file (JPEG, PNG, WebP, or GIF).");
@@ -239,25 +244,31 @@ export default function ProfileEditor() {
       setError("Profile image must be less than 5MB.");
       return;
     }
+    setError("");
+    setNotice("");
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) setCropSrc(e.target.result as string);
+    };
+    reader.readAsDataURL(file);
+  }
 
+  // Called by ImageCropModal with the cropped Blob
+  async function handleCroppedBlob(blob: Blob) {
+    if (!profile) return;
+    setCropSrc(null);
     setError("");
     setNotice("");
     setIsUploadingAvatar(true);
-
     try {
+      const file = new File([blob], "profile.jpg", { type: "image/jpeg" });
       const res = await ApiService.uploadProfilePicture(profile.usn, file);
       const newUrl = res.url || res.student?.profile_picture_url;
       setProfilePictureUrl(newUrl);
-      if (profile) {
-        setProfile({ ...profile, profile_picture_url: newUrl });
-      }
+      setProfile({ ...profile, profile_picture_url: newUrl });
       setNotice("Profile picture uploaded successfully.");
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to upload profile picture.",
-      );
+      setError(err instanceof Error ? err.message : "Failed to upload profile picture.");
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -266,7 +277,7 @@ export default function ProfileEditor() {
   function handleAvatarInputChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (file) {
-      void handleAvatarFile(file);
+      handleAvatarFile(file);
     }
     event.target.value = "";
   }
@@ -289,7 +300,7 @@ export default function ProfileEditor() {
     setIsDraggingAvatar(false);
     const file = event.dataTransfer.files?.[0];
     if (file) {
-      void handleAvatarFile(file);
+      handleAvatarFile(file);
     }
   }
 
@@ -559,7 +570,7 @@ export default function ProfileEditor() {
         )}
 
         {/* ═══════════════════════════════════════════════════════════════════════
-            TOP CENTER: PROFILE PICTURE DRAG & DROP / UPLOAD
+            TOP CENTER: PROFILE PICTURE WITH HOVER EDIT
             ═══════════════════════════════════════════════════════════════════════ */}
         <div className="profile-avatar-center-section">
           {/* Hidden file input */}
@@ -572,101 +583,81 @@ export default function ProfileEditor() {
             type="file"
           />
 
-          <div
-            aria-label="Upload or drop profile picture"
-            className={`profile-avatar-dropzone ${isDraggingAvatar ? "dragging" : ""}`}
-            onClick={() => !isUploadingAvatar && avatarInputRef.current?.click()}
-            onDragEnter={handleAvatarDragOver}
-            onDragLeave={handleAvatarDragLeave}
-            onDragOver={handleAvatarDragOver}
-            onDrop={handleAvatarDrop}
-            role="button"
-            tabIndex={0}
-            title="Click or drop an image to upload"
+          {/* Circular avatar with hover crop/upload overlay */}
+          <button
+            className="profile-avatar-edit-btn"
+            disabled={isUploadingAvatar}
+            onClick={() => {
+              if (profilePictureUrl) {
+                setCropSrc(profilePictureUrl);
+              } else {
+                avatarInputRef.current?.click();
+              }
+            }}
+            title={profilePictureUrl ? "Click to crop current photo" : "Upload profile photo"}
+            type="button"
+            aria-label={profilePictureUrl ? "Crop profile photo" : "Upload profile photo"}
           >
-            <div className="profile-avatar-img-wrap">
-              {profilePictureUrl ? (
-                <img
-                  alt={profile.name}
-                  className="profile-editor-avatar-img"
-                  src={profilePictureUrl}
-                />
-              ) : (
-                /* Default silhouette taking reference from home screen avatar div */
-                <div className="profile-avatar-default">
-                  <svg
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.75"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                </div>
-              )}
-
-              {/* Centered Modern Animated Loading Overlay or Hover Hint */}
-              {isUploadingAvatar ? (
-                <div className="profile-avatar-loading-overlay">
-                  <div className="modern-cyber-spinner">
-                    <div className="spinner-ring"></div>
-                    <div className="spinner-core"></div>
-                  </div>
-                  <span className="spinner-text">Uploading...</span>
-                </div>
-              ) : (
-                <div className="profile-avatar-overlay-hint">
-                  <svg
-                    fill="none"
-                    height="20"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                    width="20"
-                  >
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                    <circle cx="12" cy="13" r="4"></circle>
-                  </svg>
-                  <span>{profilePictureUrl ? "Change" : "Upload"}</span>
-                </div>
-              )}
-            </div>
-
-            {/* If no profile picture and not uploading, show prominent "+" symbol */}
-            {!profilePictureUrl && !isUploadingAvatar && (
-              <div className="profile-avatar-plus-badge" title="Add profile picture">
-                <svg
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  viewBox="0 0 24 24"
-                >
-                  <line x1="12" x2="12" y1="5" y2="19"></line>
-                  <line x1="5" x2="19" y1="12" y2="12"></line>
+            {/* Photo or silhouette */}
+            {profilePictureUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                alt={profile.name}
+                className="profile-avatar-circle-img"
+                src={profilePictureUrl}
+              />
+            ) : (
+              <div className="profile-avatar-circle-default">
+                <svg fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
                 </svg>
               </div>
             )}
-          </div>
 
-          <div className="profile-avatar-actions">
+            {/* Upload spinner */}
+            {isUploadingAvatar ? (
+              <div className="profile-avatar-circle-overlay">
+                <div className="modern-cyber-spinner">
+                  <div className="spinner-ring"></div>
+                  <div className="spinner-core"></div>
+                </div>
+                <span className="spinner-text">Uploading...</span>
+              </div>
+            ) : profilePictureUrl ? (
+              /* Hover crop overlay for existing photo */
+              <div className="profile-avatar-circle-overlay profile-avatar-edit-overlay">
+                <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="22" height="22">
+                  <path d="M6 2v14a2 2 0 0 0 2 2h14" />
+                  <path d="M18 22V8a2 2 0 0 0-2-2H2" />
+                </svg>
+                <span>Crop Photo</span>
+              </div>
+            ) : (
+              /* Hover upload overlay when no photo */
+              <div className="profile-avatar-circle-overlay profile-avatar-edit-overlay">
+                <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="22" height="22">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" x2="12" y1="3" y2="15" />
+                </svg>
+                <span>Upload Photo</span>
+              </div>
+            )}
+          </button>
+
+          {/* Action buttons: Change Photo & Remove Photo */}
+          <div className="profile-avatar-actions" style={{ marginTop: "0.85rem", display: "flex", gap: "0.6rem", justifyContent: "center", flexWrap: "wrap" }}>
             <button
               className="avatar-action-btn"
               disabled={isUploadingAvatar}
               onClick={() => avatarInputRef.current?.click()}
               type="button"
             >
-              <svg
-                fill="none"
-                height="15"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                width="15"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" x2="12" y1="3" y2="15"></line>
+              <svg fill="none" height="14" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="14">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" x2="12" y1="3" y2="15" />
               </svg>
               {isUploadingAvatar
                 ? "Uploading..."
@@ -675,23 +666,16 @@ export default function ProfileEditor() {
                 : "Upload Photo"}
             </button>
 
-            {profilePictureUrl && (
+            {profilePictureUrl && !isUploadingAvatar && (
               <button
                 className="avatar-action-btn btn-remove"
                 disabled={isUploadingAvatar}
                 onClick={handleRemoveAvatar}
                 type="button"
               >
-                <svg
-                  fill="none"
-                  height="15"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  width="15"
-                >
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <svg fill="none" height="14" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="14">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                 </svg>
                 Remove Photo
               </button>
@@ -1047,7 +1031,239 @@ export default function ProfileEditor() {
           </div>
         </form>
       </section>
+
+      {/* Image Crop Modal */}
+      {cropSrc && (
+        <ImageCropModal
+          src={cropSrc}
+          onCancel={() => setCropSrc(null)}
+          onConfirm={(blob) => { void handleCroppedBlob(blob); }}
+        />
+      )}
     </main>
+  );
+}
+
+
+/* ── Image Crop Modal (canvas-based, no external deps) ─────────────────────── */
+function ImageCropModal({
+  src,
+  onCancel,
+  onConfirm,
+}: {
+  src: string;
+  onCancel: () => void;
+  onConfirm: (blob: Blob) => void;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  // Crop state: offset (px) and scale relative to the 300px canvas
+  const CANVAS_SIZE = 300;
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [scale, setScale] = useState(1);
+  const dragging = useRef(false);
+  const lastPos = useRef({ x: 0, y: 0 });
+
+  // Load image and auto-fit (handles both data URL and remote HTTP URLs safely)
+  useEffect(() => {
+    let active = true;
+    let objectUrl = "";
+
+    async function initImage() {
+      let finalSrc = src;
+      if (src.startsWith("http://") || src.startsWith("https://")) {
+        try {
+          const res = await fetch(src);
+          if (res.ok) {
+            const blob = await res.blob();
+            objectUrl = URL.createObjectURL(blob);
+            finalSrc = objectUrl;
+          }
+        } catch {
+          // Fall back to direct src if fetch fails
+          finalSrc = src;
+        }
+      }
+
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        if (!active) return;
+        imgRef.current = img;
+        const fit = Math.max(CANVAS_SIZE / img.naturalWidth, CANVAS_SIZE / img.naturalHeight);
+        setScale(fit);
+        setOffset({
+          x: (CANVAS_SIZE - img.naturalWidth * fit) / 2,
+          y: (CANVAS_SIZE - img.naturalHeight * fit) / 2,
+        });
+      };
+      img.src = finalSrc;
+    }
+
+    void initImage();
+
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [src]);
+
+  // Draw on every state change
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const img = imgRef.current;
+    if (!canvas || !img) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+    // Draw image
+    ctx.drawImage(
+      img,
+      offset.x,
+      offset.y,
+      img.naturalWidth * scale,
+      img.naturalHeight * scale,
+    );
+
+    // Dark overlay ONLY outside the circle (even-odd fill rule — leaves circle clear)
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,0.62)";
+    ctx.beginPath();
+    ctx.rect(0, 0, CANVAS_SIZE, CANVAS_SIZE);           // outer rectangle
+    ctx.arc(CANVAS_SIZE / 2, CANVAS_SIZE / 2, CANVAS_SIZE / 2 - 2, 0, Math.PI * 2, true); // CCW = hole
+    ctx.fill("evenodd");
+    ctx.restore();
+
+    // Circle border
+    ctx.save();
+    ctx.strokeStyle = "rgba(99,102,241,0.9)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(CANVAS_SIZE / 2, CANVAS_SIZE / 2, CANVAS_SIZE / 2 - 2, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }, [offset, scale]);
+
+  // Mouse drag
+  function onMouseDown(e: React.MouseEvent) {
+    dragging.current = true;
+    lastPos.current = { x: e.clientX, y: e.clientY };
+  }
+  function onMouseMove(e: React.MouseEvent) {
+    if (!dragging.current) return;
+    const dx = e.clientX - lastPos.current.x;
+    const dy = e.clientY - lastPos.current.y;
+    lastPos.current = { x: e.clientX, y: e.clientY };
+    setOffset((p) => ({ x: p.x + dx, y: p.y + dy }));
+  }
+  function onMouseUp() { dragging.current = false; }
+
+  // Touch drag
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    dragging.current = true;
+    lastPos.current = { x: t.clientX, y: t.clientY };
+  }
+  function onTouchMove(e: React.TouchEvent) {
+    if (!dragging.current) return;
+    const t = e.touches[0];
+    const dx = t.clientX - lastPos.current.x;
+    const dy = t.clientY - lastPos.current.y;
+    lastPos.current = { x: t.clientX, y: t.clientY };
+    setOffset((p) => ({ x: p.x + dx, y: p.y + dy }));
+  }
+  function onTouchEnd() { dragging.current = false; }
+
+  // Zoom via slider
+  function onZoomChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const newScale = parseFloat(e.target.value);
+    setScale(newScale);
+  }
+
+  // Export cropped circle as JPEG blob
+  function handleConfirm() {
+    const canvas = canvasRef.current;
+    const img = imgRef.current;
+    if (!canvas || !img) return;
+
+    const out = document.createElement("canvas");
+    out.width = CANVAS_SIZE;
+    out.height = CANVAS_SIZE;
+    const ctx = out.getContext("2d");
+    if (!ctx) return;
+
+    // Clip to circle
+    ctx.beginPath();
+    ctx.arc(CANVAS_SIZE / 2, CANVAS_SIZE / 2, CANVAS_SIZE / 2, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(img, offset.x, offset.y, img.naturalWidth * scale, img.naturalHeight * scale);
+
+    out.toBlob(
+      (blob) => { if (blob) onConfirm(blob); },
+      "image/jpeg",
+      0.92,
+    );
+  }
+
+  const minScale = imgRef.current
+    ? Math.max(CANVAS_SIZE / imgRef.current.naturalWidth, CANVAS_SIZE / imgRef.current.naturalHeight) * 0.8
+    : 0.5;
+
+  return (
+    <div className="crop-modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
+      <div className="crop-modal-dialog">
+        <div className="crop-modal-header">
+          <span>Crop Profile Photo</span>
+          <button className="crop-modal-close" onClick={onCancel} type="button" aria-label="Cancel crop">✕</button>
+        </div>
+
+        <p className="crop-modal-hint">Drag to reposition · Zoom slider to fit</p>
+
+        <canvas
+          ref={canvasRef}
+          width={CANVAS_SIZE}
+          height={CANVAS_SIZE}
+          className="crop-canvas"
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseUp}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          style={{ cursor: "grab", userSelect: "none" }}
+        />
+
+        <div className="crop-zoom-row">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+          <input
+            className="crop-zoom-slider"
+            type="range"
+            min={minScale}
+            max={minScale * 4}
+            step={0.01}
+            value={scale}
+            onChange={onZoomChange}
+          />
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+
+        <div className="crop-modal-actions">
+          <button className="btn btn-secondary" onClick={onCancel} type="button">Cancel</button>
+          <button className="btn btn-primary" onClick={handleConfirm} type="button">
+            ✓ Crop &amp; Upload
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
