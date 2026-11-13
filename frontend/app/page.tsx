@@ -7,7 +7,7 @@ import OtpVerificationModal from "./OtpVerificationModal";
 import { ApiService, getToken, isOtpVerified } from "./lib/api.js";
 
 export default function HomePage() {
-  const [currentUser, setCurrentUser] = useState<{ name: string; usn: string; email?: string | null } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ name: string; usn: string; email?: string | null; avatar?: string | null } | null>(null);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
 
   useEffect(() => {
@@ -17,7 +17,15 @@ export default function HomePage() {
 
     if (getToken()) {
       void ApiService.getMyProfile()
-        .then((profile) => setCurrentUser({ name: profile.name, usn: profile.usn, email: profile.email }))
+        .then((profile) => {
+          const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=6366f1&color=fff&size=200`;
+          setCurrentUser({
+            name: profile.name,
+            usn: profile.usn,
+            email: profile.email,
+            avatar: profile.profile_picture_url || avatarFallback,
+          });
+        })
         .catch((error) => {
           console.error("Could not restore the logged-in student:", error);
         });
@@ -122,13 +130,18 @@ export default function HomePage() {
                 }}
                 aria-label={`Edit profile for ${currentUser.name}`}
               >
-                <span className="profile-avatar-mini" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
+                <span className="nav-avatar-wrap" aria-hidden="true">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={currentUser.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff&size=200`}
+                    alt={currentUser.name}
+                    className="nav-avatar-img"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff&size=200`;
+                    }}
+                  />
                 </span>
-                <span>{currentUser.name}</span>
+                <span className="nav-avatar-name">{currentUser.name.split(" ")[0]}</span>
               </a>
             ) : (
               <>
@@ -417,7 +430,22 @@ export default function HomePage() {
       {"\n  "}
       <LoginModal
         onLoginSuccess={(user) => {
-          setCurrentUser({ name: user.name, usn: user.usn, email: user.email });
+          // Set a quick placeholder immediately so the name appears instantly
+          const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=6366f1&color=fff&size=200`;
+          setCurrentUser({ name: user.name, usn: user.usn, email: user.email, avatar: avatarFallback });
+
+          // Fetch the full profile in the background to get the real profile picture
+          void ApiService.getMyProfile()
+            .then((profile) => {
+              setCurrentUser({
+                name: profile.name,
+                usn: profile.usn,
+                email: profile.email,
+                avatar: profile.profile_picture_url || avatarFallback,
+              });
+            })
+            .catch(() => { /* keep placeholder on error */ });
+
           if (!user.email || !user.email.trim()) {
             window.location.href = "/profile";
           }

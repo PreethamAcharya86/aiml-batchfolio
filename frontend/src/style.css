@@ -278,13 +278,43 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .profile-user-btn {
-  max-width: 280px;
+  max-width: 200px;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem 0.4rem 0.4rem;
 }
 
 .profile-user-btn > span:last-child {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Navbar profile picture (logged-in state) */
+.nav-avatar-wrap {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(99, 102, 241, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.nav-avatar-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
 }
 
 /* Buttons */
