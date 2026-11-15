@@ -73,10 +73,7 @@ export default function ResumesPage() {
   }
 
   return (
-    <div className="dark-theme">
-      <div className="glow-orb orb-1" />
-      <div className="glow-orb orb-2" />
-      <div className="glow-orb orb-3" />
+    <div className="theme-nordic">
 
       {/* ── NAVBAR ── */}
       <header className="navbar" id="main-nav">
@@ -129,7 +126,7 @@ export default function ResumesPage() {
               <span>Interactive Resume Vault</span>
             </div>
             <h1 className="section-title" style={{ fontSize: "2.3rem", marginBottom: "0.6rem" }}>
-              Class of 2024–2028 <span className="gradient-text">Resume Portfolios</span>
+              Class of 2024–2028 <span className="highlight-text">Resume Portfolios</span>
             </h1>
             <p className="section-desc" style={{ maxWidth: "600px", margin: "0 auto" }}>
               Click any student resume card to expand and view the full verified document in the center.

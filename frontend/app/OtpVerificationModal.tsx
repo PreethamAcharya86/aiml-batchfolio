@@ -120,7 +120,7 @@ export default function OtpVerificationModal({
 
         <div className="auth-header" style={{ marginBottom: "1.75rem" }}>
           <div className="auth-logo-badge" style={{ background: "rgba(0, 99, 142, 0.18)", borderColor: "rgba(140, 185, 204, 0.3)" }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="#BFD8E3" strokeWidth="2" width="28" height="28">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--light-azure, #BFD8E3)" strokeWidth="2" width="28" height="28">
               <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
