@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import LoginModal from "../LoginModal";
 import OtpVerificationModal from "../OtpVerificationModal";
-import { ApiService, getToken, isOtpVerified } from "../lib/api.js";
+import { ApiService, clearToken, getToken, isOtpVerified } from "../lib/api.js";
 
 type Student = {
   usn: string;
@@ -90,6 +90,13 @@ export default function ResumesPage() {
 
   function openLogin() {
     window.dispatchEvent(new Event("batchfolio:open-login"));
+  }
+
+  function handleLogout() {
+    clearToken();
+    setCurrentUser(null);
+    setIsMobileMenuOpen(false);
+    window.location.reload();
   }
 
   function handleProfileClick(e: React.MouseEvent) {
@@ -282,14 +289,7 @@ export default function ResumesPage() {
                   <button
                     type="button"
                     className="btn btn-outline mobile-logout-btn"
-                    onClick={() => {
-                      localStorage.removeItem("auth_token");
-                      localStorage.removeItem("auth_token_expires_at");
-                      localStorage.removeItem("otp_verified");
-                      setCurrentUser(null);
-                      setIsMobileMenuOpen(false);
-                      window.location.reload();
-                    }}
+                    onClick={handleLogout}
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
