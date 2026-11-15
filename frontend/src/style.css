@@ -15,19 +15,19 @@
   --text-muted: #94a3b8;
   --text-dim: #64748b;
 
-  /* Vibrant Accents */
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-glow: rgba(99, 102, 241, 0.45);
-  --secondary: #06b6d4;
-  --secondary-glow: rgba(6, 182, 212, 0.35);
-  --accent: #a855f7;
+  /* Nordic Slate / Dark Azure Unified Palette */
+  --primary: #00638E;
+  --primary-hover: #004A6B;
+  --primary-glow: rgba(0, 99, 142, 0.45);
+  --secondary: #8CB9CC;
+  --secondary-glow: rgba(140, 185, 204, 0.35);
+  --accent: #BFD8E3;
   --success: #10b981;
 
   /* Gradients */
-  --gradient-brand: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #06b6d4 100%);
-  --gradient-card-border: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(6, 182, 212, 0.1), rgba(255, 255, 255, 0.05));
-  --gradient-glow: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 70%);
+  --gradient-brand: linear-gradient(135deg, #000000 0%, #004A6B 35%, #00638E 70%, #8CB9CC 100%);
+  --gradient-card-border: linear-gradient(135deg, rgba(0, 99, 142, 0.45), rgba(140, 185, 204, 0.15));
+  --gradient-glow: radial-gradient(circle, rgba(0, 99, 142, 0.22) 0%, transparent 70%);
 
   /* Typography */
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -1635,16 +1635,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .portal-ring.ring-outer {
   inset: 0;
-  border-top-color: #6366f1;
-  border-bottom-color: #06b6d4;
+  border-top-color: #00638E;
+  border-bottom-color: #8CB9CC;
   animation: portalSpin 1.4s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+  box-shadow: 0 0 20px rgba(0, 99, 142, 0.4);
 }
 
 .portal-ring.ring-inner {
   inset: 10px;
-  border-left-color: #a855f7;
-  border-right-color: #6366f1;
+  border-left-color: #8CB9CC;
+  border-right-color: #00638E;
   animation: portalSpinRev 1s linear infinite;
 }
 
@@ -1652,7 +1652,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(6, 182, 212, 0.1) 100%);
+  background: radial-gradient(circle, rgba(0, 99, 142, 0.45) 0%, rgba(140, 185, 204, 0.15) 100%);
   border: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
@@ -2490,18 +2490,18 @@ h1, h2, h3, h4, h5, h6 {
   inset: 0;
   border-radius: 50%;
   border: 3px solid transparent;
-  border-top-color: #6366f1;
-  border-right-color: #06b6d4;
+  border-top-color: #00638E;
+  border-right-color: #8CB9CC;
   animation: cyberSpin 0.9s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
-  box-shadow: 0 0 16px rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 16px rgba(0, 99, 142, 0.5);
 }
 
 .spinner-core {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: radial-gradient(circle, #38bdf8 0%, #6366f1 100%);
-  box-shadow: 0 0 12px #38bdf8;
+  background: radial-gradient(circle, #8CB9CC 0%, #00638E 100%);
+  box-shadow: 0 0 12px #8CB9CC;
   animation: corePulse 1.2s ease-in-out infinite alternate;
 }
 
@@ -3394,15 +3394,15 @@ h1, h2, h3, h4, h5, h6 {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #6366f1;
+  background: #00638E;
   cursor: pointer;
-  box-shadow: 0 0 6px rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 6px rgba(0, 99, 142, 0.6);
 }
 .crop-zoom-slider::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #6366f1;
+  background: #00638E;
   cursor: pointer;
   border: none;
 }
