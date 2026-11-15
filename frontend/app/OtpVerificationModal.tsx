@@ -22,16 +22,14 @@ export default function OtpVerificationModal({
   const [notice, setNotice] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
 
-  // Send OTP automatically when modal opens
+  // Check/send OTP automatically when modal opens
   useEffect(() => {
     if (!isOpen) {
-      setOtp("");
       setError("");
-      setNotice("");
       return;
     }
 
-    sendCode();
+    void sendCode(false);
   }, [isOpen]);
 
   // Cooldown countdown timer
@@ -53,16 +51,19 @@ export default function OtpVerificationModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  async function sendCode() {
+  async function sendCode(isResend: boolean = false) {
     setIsSending(true);
     setError("");
-    setNotice("");
 
     try {
-      const result = await ApiService.sendOtp();
+      const result = await ApiService.sendOtp(isResend);
       setMaskedEmail(result.masked_email || "your registered email");
-      setNotice(`Verification code sent to ${result.masked_email || "your email"}`);
-      setResendCooldown(30);
+      if (result.already_sent) {
+        setNotice(`Verification code was already sent to ${result.masked_email || "your email"}. Check your inbox or enter it below.`);
+      } else {
+        setNotice(`Verification code sent to ${result.masked_email || "your email"}`);
+        setResendCooldown(30);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to send verification code.");
     } finally {
@@ -200,7 +201,7 @@ export default function OtpVerificationModal({
             <button
               type="button"
               className="btn btn-outline"
-              onClick={sendCode}
+              onClick={() => void sendCode(true)}
               disabled={isSending || resendCooldown > 0}
               style={{
                 width: "100%",

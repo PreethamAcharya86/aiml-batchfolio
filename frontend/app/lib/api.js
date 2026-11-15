@@ -34,39 +34,101 @@ async function apiFetch(path, options = {}) {
   }
 }
 
-// ── Token & Session helpers (SSR Safe) ────────────────────────────────────────
+// ── Token & Session helpers (SSR Safe, 24-Hour Multi-Tab Persistence) ────────
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
 export function saveToken(token) {
   if (typeof window !== 'undefined') {
-    sessionStorage.setItem('batchfolio_token', token);
+    const expiresAt = Date.now() + SESSION_TTL_MS;
+    try {
+      localStorage.setItem('batchfolio_token', token);
+      localStorage.setItem('batchfolio_expires_at', String(expiresAt));
+    } catch {}
+    try {
+      sessionStorage.setItem('batchfolio_token', token);
+    } catch {}
   }
 }
+
 export function clearToken() {
   if (typeof window !== 'undefined') {
-    sessionStorage.removeItem('batchfolio_token');
-    sessionStorage.removeItem('batchfolio_user');
-    sessionStorage.removeItem('batchfolio_otp_verified');
+    try {
+      localStorage.removeItem('batchfolio_token');
+      localStorage.removeItem('batchfolio_user');
+      localStorage.removeItem('batchfolio_expires_at');
+      localStorage.removeItem('batchfolio_otp_verified');
+    } catch {}
+    try {
+      sessionStorage.removeItem('batchfolio_token');
+      sessionStorage.removeItem('batchfolio_user');
+      sessionStorage.removeItem('batchfolio_otp_verified');
+    } catch {}
   }
 }
+
 export function getToken() {
   if (typeof window === 'undefined') return null;
-  return sessionStorage.getItem('batchfolio_token') || null;
-}
-export function isOtpVerified() {
-  if (typeof window === 'undefined') return false;
-  return sessionStorage.getItem('batchfolio_otp_verified') === 'true';
-}
-export function setOtpVerified(verified = true) {
-  if (typeof window === 'undefined') return;
-  if (verified) {
-    sessionStorage.setItem('batchfolio_otp_verified', 'true');
-  } else {
-    sessionStorage.removeItem('batchfolio_otp_verified');
+
+  try {
+    // 1. Check TTL expiration
+    const expStr = localStorage.getItem('batchfolio_expires_at');
+    if (expStr && Date.now() > Number(expStr)) {
+      clearToken();
+      return null;
+    }
+
+    // 2. Retrieve token from localStorage (persists across tabs) or sessionStorage fallback
+    const token = localStorage.getItem('batchfolio_token') || sessionStorage.getItem('batchfolio_token');
+    if (!token) return null;
+
+    // 3. Validate JWT exp claim if present
+    const payloadBase64 = token.split('.')[1];
+    if (payloadBase64) {
+      const decoded = JSON.parse(atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/')));
+      if (decoded.exp && Date.now() >= decoded.exp * 1000) {
+        clearToken();
+        return null;
+      }
+    }
+
+    return token;
+  } catch {
+    return localStorage.getItem('batchfolio_token') || sessionStorage.getItem('batchfolio_token') || null;
   }
 }
+
+export function isOtpVerified() {
+  if (typeof window === 'undefined') return false;
+  if (!getToken()) return false;
+  try {
+    return (
+      localStorage.getItem('batchfolio_otp_verified') === 'true' ||
+      sessionStorage.getItem('batchfolio_otp_verified') === 'true'
+    );
+  } catch {
+    return false;
+  }
+}
+
+export function setOtpVerified(verified = true) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (verified) {
+      localStorage.setItem('batchfolio_otp_verified', 'true');
+      sessionStorage.setItem('batchfolio_otp_verified', 'true');
+    } else {
+      localStorage.removeItem('batchfolio_otp_verified');
+      sessionStorage.removeItem('batchfolio_otp_verified');
+    }
+  } catch {}
+}
+
 export function getLoggedInUser() {
   if (typeof window === 'undefined') return null;
+  if (!getToken()) return null;
+
   try {
-    const raw = sessionStorage.getItem('batchfolio_user');
+    const raw = localStorage.getItem('batchfolio_user') || sessionStorage.getItem('batchfolio_user');
     if (raw) return JSON.parse(raw);
   } catch {}
 
@@ -162,7 +224,12 @@ export const ApiService = {
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Login failed');
     if (data.access_token) saveToken(data.access_token);
-    if (data.user) sessionStorage.setItem('batchfolio_user', JSON.stringify(data.user));
+    if (data.user && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('batchfolio_user', JSON.stringify(data.user));
+        sessionStorage.setItem('batchfolio_user', JSON.stringify(data.user));
+      } catch {}
+    }
     return { success: true, ...data };
   },
 
@@ -178,8 +245,12 @@ export const ApiService = {
       if (res.status === 401) clearToken();
       throw new Error(data.detail || 'Failed to load profile');
     }
-    if (data.usn) {
-      sessionStorage.setItem('batchfolio_user', JSON.stringify({ name: data.name, usn: data.usn, id: data.id }));
+    if (data.usn && typeof window !== 'undefined') {
+      try {
+        const u = { name: data.name, usn: data.usn, id: data.id };
+        localStorage.setItem('batchfolio_user', JSON.stringify(u));
+        sessionStorage.setItem('batchfolio_user', JSON.stringify(u));
+      } catch {}
     }
     return data;
   },
@@ -270,10 +341,11 @@ export const ApiService = {
   },
 
   /** POST /api/auth/send-otp - send 6-digit OTP to student's email */
-  async sendOtp() {
+  async sendOtp(resend = false) {
     const token = getToken();
     if (!token) throw new Error('Authentication required. Please log in.');
-    const res = await apiFetch('/auth/send-otp', {
+    const query = resend ? '?resend=true' : '';
+    const res = await apiFetch(`/auth/send-otp${query}`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,

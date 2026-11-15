@@ -1284,15 +1284,18 @@ function ProfileInlineOtp({
   const [notice, setNotice] = useState("");
   const [cooldown, setCooldown] = useState(0);
 
-  const sendOtpCode = async () => {
+  const sendOtpCode = async (isResend: boolean = false) => {
     setIsSending(true);
     setError("");
-    setNotice("");
     try {
-      const res = await ApiService.sendOtp();
+      const res = await ApiService.sendOtp(isResend);
       setMaskedEmail(res.masked_email || "your registered email");
-      setNotice(`Verification code sent to ${res.masked_email || "your email"}`);
-      setCooldown(30);
+      if (res.already_sent) {
+        setNotice(`Verification code was already sent to ${res.masked_email || "your email"}. Check your inbox or enter it below.`);
+      } else {
+        setNotice(`Verification code sent to ${res.masked_email || "your email"}`);
+        setCooldown(30);
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to send verification code.");
     } finally {
@@ -1301,7 +1304,7 @@ function ProfileInlineOtp({
   };
 
   useEffect(() => {
-    void sendOtpCode();
+    void sendOtpCode(false);
   }, []);
 
   useEffect(() => {
@@ -1401,7 +1404,7 @@ function ProfileInlineOtp({
           <button
             type="button"
             className="btn btn-outline"
-            onClick={sendOtpCode}
+            onClick={() => void sendOtpCode(true)}
             disabled={isSending || cooldown > 0}
             style={{ width: "100%", padding: "0.55rem", justifyContent: "center", fontSize: "0.82rem", border: "1px solid rgba(255, 255, 255, 0.12)", color: "var(--text-muted)" }}
           >

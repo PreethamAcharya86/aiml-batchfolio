@@ -233,9 +233,10 @@ def login(body: LoginRequest):
 
 
 @app.post("/api/auth/send-otp", tags=["Auth"])
-def send_otp(current_user: dict = Depends(get_current_student)):
+def send_otp(resend: bool = False, current_user: dict = Depends(get_current_student)):
     """
     Generate and email a 6-digit verification code to the student's registered email.
+    If an unexpired code was already sent and resend is False, returns existing status without duplicate email dispatch.
     """
     usn = current_user.get("sub")
     if not isinstance(usn, str) or not usn:
@@ -259,7 +260,14 @@ def send_otp(current_user: dict = Depends(get_current_student)):
         )
 
     try:
-        return create_and_send_otp(usn, str(email).strip(), student.get("name") or "Student")
+        return create_and_send_otp(
+            usn,
+            str(email).strip(),
+            student.get("name") or "Student",
+            force_resend=resend,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=429, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
