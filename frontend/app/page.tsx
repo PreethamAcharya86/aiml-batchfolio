@@ -47,6 +47,7 @@ function CountUpStat({ target }: { target: number }) {
 export default function HomePage() {
   const [currentUser, setCurrentUser] = useState<{ name: string; usn: string; email?: string | null; avatar?: string | null } | null>(null);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -72,8 +73,17 @@ export default function HomePage() {
 
     const handleOtpRequest = () => setIsOtpModalOpen(true);
     window.addEventListener("batchfolio:open-otp-verification", handleOtpRequest);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
     return () => {
       window.removeEventListener("batchfolio:open-otp-verification", handleOtpRequest);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
@@ -119,6 +129,21 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, []);
 
+  function scrollToSearch(e?: React.MouseEvent) {
+    if (e) e.preventDefault();
+    const searchSection = document.getElementById("search-section");
+    const searchInput = document.getElementById("student-search-input");
+    if (searchSection) {
+      const navbar = document.getElementById("main-nav");
+      const navHeight = navbar ? navbar.offsetHeight : 74;
+      const targetY = searchSection.getBoundingClientRect().top + window.scrollY - navHeight;
+      window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
+      setTimeout(() => {
+        searchInput?.focus({ preventScroll: true });
+      }, 350);
+    }
+  }
+
   function openLogin() {
     window.dispatchEvent(new Event("batchfolio:open-login"));
   }
@@ -127,7 +152,7 @@ export default function HomePage() {
     <div className="theme-nordic">
       <header className="navbar" id="main-nav">
         <div className="nav-container">
-          <a href="#home" className="brand-link" id="brand-logo-link">
+          <a href="#home" className="brand-link" id="brand-logo-link" onClick={() => setIsMobileMenuOpen(false)}>
             <div className="brand-logo-wrap">
               <img src="/assets/artifera_logo.jpeg" alt="Artifera Logo" className="nav-logo" id="nav-artifera-logo" />
             </div>
@@ -147,7 +172,7 @@ export default function HomePage() {
               </svg>
               Home
             </a>
-            <a href="#search-section" className="nav-item" id="nav-btn-search">
+            <a href="#search-section" className="nav-item" id="nav-btn-search" onClick={scrollToSearch}>
               <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="11" cy="11" r="8"></circle>
                 <path d="m21 21-4.3-4.3"></path>
@@ -210,7 +235,197 @@ export default function HomePage() {
               </>
             )}
           </div>
+
+          {/* Mobile Screen Navbar Toggle Button */}
+          <button
+            type="button"
+            className={`mobile-nav-toggle ${isMobileMenuOpen ? "active" : ""}`}
+            id="mobile-nav-toggle"
+            aria-label="Toggle navigation menu"
+            aria-expanded={isMobileMenuOpen}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {currentUser && (
+              <span className="mobile-toggle-user-badge">
+                <img
+                  src={currentUser.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=00638E&color=FFFFFF&size=200`}
+                  alt={currentUser.name}
+                  className="mobile-toggle-avatar"
+                />
+                <span className="mobile-toggle-mini-dot"></span>
+              </span>
+            )}
+            <span className="mobile-toggle-icon">
+              {isMobileMenuOpen ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="22" height="22">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="22" height="22">
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              )}
+            </span>
+          </button>
         </div>
+
+        {/* Mobile Dropdown Drawer */}
+        <div className={`mobile-nav-drawer ${isMobileMenuOpen ? "open" : ""}`} id="mobile-nav-drawer">
+          {/* Profile Section */}
+          <div className="mobile-profile-section">
+            {currentUser ? (
+              <div className="mobile-user-card">
+                <div className="mobile-user-header">
+                  <div className="mobile-user-avatar-wrap">
+                    <img
+                      src={currentUser.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=00638E&color=FFFFFF&size=200`}
+                      alt={currentUser.name}
+                      className="mobile-user-avatar"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=00638E&color=FFFFFF&size=200`;
+                      }}
+                    />
+                    <span className="mobile-user-status-dot"></span>
+                  </div>
+                  <div className="mobile-user-info">
+                    <h4 className="mobile-user-name">{currentUser.name}</h4>
+                    <span className="mobile-user-usn">{currentUser.usn}</span>
+                    {currentUser.email && (
+                      <span className="mobile-user-email">{currentUser.email}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="mobile-user-actions">
+                  <a
+                    href="/profile"
+                    className="btn btn-primary mobile-edit-profile-btn"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsMobileMenuOpen(false);
+                      if (!currentUser.email || isOtpVerified()) {
+                        window.location.href = "/profile";
+                      } else {
+                        setIsOtpModalOpen(true);
+                      }
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                      <path d="M12 20h9"></path>
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                    <span>Edit Profile</span>
+                  </a>
+                  <button
+                    type="button"
+                    className="btn btn-outline mobile-logout-btn"
+                    onClick={() => {
+                      localStorage.removeItem("auth_token");
+                      localStorage.removeItem("auth_token_expires_at");
+                      localStorage.removeItem("otp_verified");
+                      setCurrentUser(null);
+                      setIsMobileMenuOpen(false);
+                      window.location.reload();
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                      <polyline points="16 17 21 12 16 7"></polyline>
+                      <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mobile-guest-card">
+                <div className="mobile-guest-header">
+                  <div className="mobile-guest-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="22" height="22">
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </div>
+                  <div className="mobile-guest-text">
+                    <h4 className="mobile-guest-title">Student Account</h4>
+                    <p className="mobile-guest-desc">Log in to edit profile & resume</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-primary mobile-login-btn"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    openLogin();
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                    <polyline points="10 17 15 12 10 7"></polyline>
+                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                  </svg>
+                  <span>Student Login</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Navigation Links */}
+          <div className="mobile-nav-links">
+            <a
+              href="#home"
+              className="mobile-nav-item"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+              <span>Home</span>
+            </a>
+            <a
+              href="#search-section"
+              className="mobile-nav-item"
+              onClick={(e) => {
+                setIsMobileMenuOpen(false);
+                scrollToSearch(e);
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </svg>
+              <span>Search Students</span>
+            </a>
+            <Link
+              href="/resumes"
+              className="mobile-nav-item"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <span>Resume Portfolios</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Mobile Backdrop */}
+        {isMobileMenuOpen && (
+          <div
+            className="mobile-nav-backdrop"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+        )}
       </header>
 
       <main className="page-main" ref={mainRef}>

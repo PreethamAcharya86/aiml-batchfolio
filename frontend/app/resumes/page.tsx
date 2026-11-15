@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ApiService } from "../lib/api.js";
+import LoginModal from "../LoginModal";
+import OtpVerificationModal from "../OtpVerificationModal";
+import { ApiService, getToken, isOtpVerified } from "../lib/api.js";
 
 type Student = {
   usn: string;
@@ -21,6 +23,8 @@ export default function ResumesPage() {
   const [filterMode, setFilterMode] = useState<"with-resume" | "all">("with-resume");
   const [activeResumeStudent, setActiveResumeStudent] = useState<Student | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ name: string; usn: string; email?: string | null; avatar?: string | null } | null>(null);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
 
   useEffect(() => {
     ApiService.getStudents()
@@ -32,6 +36,29 @@ export default function ResumesPage() {
       })
       .catch(() => setError("Could not load resumes. Please verify connection and try again."))
       .finally(() => setLoading(false));
+
+    if (getToken()) {
+      void ApiService.getMyProfile()
+        .then((profile) => {
+          const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=6366f1&color=fff&size=200`;
+          setCurrentUser({
+            name: profile.name,
+            usn: profile.usn,
+            email: profile.email,
+            avatar: profile.profile_picture_url || avatarFallback,
+          });
+        })
+        .catch((err) => {
+          console.error("Could not restore logged-in student in resumes:", err);
+        });
+    }
+
+    const handleOtpRequest = () => setIsOtpModalOpen(true);
+    window.addEventListener("batchfolio:open-otp-verification", handleOtpRequest);
+
+    return () => {
+      window.removeEventListener("batchfolio:open-otp-verification", handleOtpRequest);
+    };
   }, []);
 
   useEffect(() => {
@@ -60,6 +87,19 @@ export default function ResumesPage() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  function openLogin() {
+    window.dispatchEvent(new Event("batchfolio:open-login"));
+  }
+
+  function handleProfileClick(e: React.MouseEvent) {
+    e.preventDefault();
+    if (!currentUser?.email || isOtpVerified()) {
+      window.location.href = "/profile";
+    } else {
+      setIsOtpModalOpen(true);
+    }
+  }
 
   function handleDownload(student: Student) {
     if (!student.resumeUrl) return;
@@ -118,6 +158,45 @@ export default function ResumesPage() {
             </Link>
           </nav>
 
+          {/* Desktop Nav Actions */}
+          <div className="nav-actions">
+            {currentUser ? (
+              <a
+                className="btn btn-primary profile-user-btn"
+                href="/profile"
+                onClick={handleProfileClick}
+                aria-label={`Edit profile for ${currentUser.name}`}
+              >
+                <span className="nav-avatar-wrap" aria-hidden="true">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={currentUser.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff&size=200`}
+                    alt={currentUser.name}
+                    className="nav-avatar-img"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff&size=200`;
+                    }}
+                  />
+                </span>
+                <span className="nav-avatar-name">{currentUser.name.split(" ")[0]}</span>
+              </a>
+            ) : (
+              <>
+                <button className="profile-icon-btn" id="nav-profile-btn" title="Student Login" aria-label="Open User Login" onClick={openLogin}>
+                  <span className="profile-avatar-mini" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </span>
+                </button>
+                <button className="btn btn-primary" id="open-login-btn" onClick={openLogin}>
+                  <span>Login</span>
+                </button>
+              </>
+            )}
+          </div>
+
           {/* Mobile Screen Toggle */}
           <button
             type="button"
@@ -127,6 +206,16 @@ export default function ResumesPage() {
             aria-expanded={isMobileMenuOpen}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
+            {currentUser && (
+              <span className="mobile-toggle-user-badge">
+                <img
+                  src={currentUser.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff&size=200`}
+                  alt={currentUser.name}
+                  className="mobile-toggle-avatar"
+                />
+                <span className="mobile-toggle-mini-dot"></span>
+              </span>
+            )}
             <span className="mobile-toggle-icon">
               {isMobileMenuOpen ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="22" height="22">
@@ -146,6 +235,104 @@ export default function ResumesPage() {
 
         {/* Mobile Dropdown Drawer */}
         <div className={`mobile-nav-drawer ${isMobileMenuOpen ? "open" : ""}`}>
+          {/* Profile Section in Mobile Drawer */}
+          <div className="mobile-profile-section">
+            {currentUser ? (
+              <div className="mobile-user-card">
+                <div className="mobile-user-header">
+                  <div className="mobile-user-avatar-wrap">
+                    <img
+                      src={currentUser.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff&size=200`}
+                      alt={currentUser.name}
+                      className="mobile-user-avatar"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=6366f1&color=fff&size=200`;
+                      }}
+                    />
+                    <span className="mobile-user-status-dot"></span>
+                  </div>
+                  <div className="mobile-user-info">
+                    <h4 className="mobile-user-name">{currentUser.name}</h4>
+                    <span className="mobile-user-usn">{currentUser.usn}</span>
+                    {currentUser.email && (
+                      <span className="mobile-user-email">{currentUser.email}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="mobile-user-actions">
+                  <a
+                    href="/profile"
+                    className="btn btn-primary mobile-edit-profile-btn"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsMobileMenuOpen(false);
+                      if (!currentUser.email || isOtpVerified()) {
+                        window.location.href = "/profile";
+                      } else {
+                        setIsOtpModalOpen(true);
+                      }
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                      <path d="M12 20h9"></path>
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                    <span>Edit Profile</span>
+                  </a>
+                  <button
+                    type="button"
+                    className="btn btn-outline mobile-logout-btn"
+                    onClick={() => {
+                      localStorage.removeItem("auth_token");
+                      localStorage.removeItem("auth_token_expires_at");
+                      localStorage.removeItem("otp_verified");
+                      setCurrentUser(null);
+                      setIsMobileMenuOpen(false);
+                      window.location.reload();
+                    }}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                      <polyline points="16 17 21 12 16 7"></polyline>
+                      <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mobile-guest-card">
+                <div className="mobile-guest-header">
+                  <div className="mobile-guest-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="22" height="22">
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </div>
+                  <div className="mobile-guest-text">
+                    <h4 className="mobile-guest-title">Student Account</h4>
+                    <p className="mobile-guest-desc">Log in to edit profile & resume</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-primary mobile-login-btn"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    openLogin();
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                    <polyline points="10 17 15 12 10 7"></polyline>
+                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                  </svg>
+                  <span>Student Login</span>
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="mobile-nav-links">
             <Link
               href="/"
@@ -185,9 +372,9 @@ export default function ResumesPage() {
       </header>
 
       {/* ── MAIN CONTENT ── */}
-      <main className="page-main" style={{ paddingTop: "6.5rem", paddingBottom: "5rem" }}>
+      <main className="page-main" style={{ paddingTop: "2.5rem", paddingBottom: "5rem" }}>
+        {/* Header Title Section */}
         <div className="section-container">
-          {/* Header Title */}
           <div className="section-title-wrap" style={{ marginBottom: "2rem", textAlign: "center" }}>
             <div className="hero-badge animate-fade" style={{ display: "inline-flex", marginBottom: "0.85rem" }}>
               <span className="badge-dot" />
@@ -200,9 +387,11 @@ export default function ResumesPage() {
               Click any student resume card to expand and view the full verified document in the center.
             </p>
           </div>
+        </div>
 
-          {/* Controls Bar: Search & Filter Tabs */}
-          <div className="search-wrapper" style={{ marginBottom: "2.5rem", maxWidth: "820px", margin: "0 auto 2.5rem" }}>
+        {/* Sticky Search & Filter Section */}
+        <section className="search-section resume-search-sticky" id="resume-search-section">
+          <div className="search-wrapper" style={{ maxWidth: "820px" }}>
             <div className="search-bar-row">
               <div className="search-input-container">
                 <svg className="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
@@ -257,7 +446,10 @@ export default function ResumesPage() {
               </div>
             </div>
           </div>
+        </section>
 
+        {/* Resumes Grid Container */}
+        <div className="section-container" style={{ marginTop: "2rem" }}>
           {/* Loading State */}
           {loading && (
             <div style={{ textAlign: "center", padding: "5rem 1rem" }}>
@@ -327,6 +519,38 @@ export default function ResumesPage() {
           )}
         </div>
       </main>
+
+      {/* Auth & OTP Modals */}
+      <LoginModal
+        onLoginSuccess={(user) => {
+          setCurrentUser({
+            name: user.name || "Student",
+            usn: user.usn,
+            email: user.email,
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "Student")}&background=6366f1&color=fff&size=200`,
+          });
+          void ApiService.getMyProfile()
+            .then((profile) => {
+              const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=6366f1&color=fff&size=200`;
+              setCurrentUser({
+                name: profile.name,
+                usn: profile.usn,
+                email: profile.email,
+                avatar: profile.profile_picture_url || avatarFallback,
+              });
+            })
+            .catch(() => {});
+        }}
+      />
+
+      <OtpVerificationModal
+        isOpen={isOtpModalOpen}
+        onClose={() => setIsOtpModalOpen(false)}
+        onSuccess={() => {
+          setIsOtpModalOpen(false);
+          window.location.href = "/profile";
+        }}
+      />
 
       {/* ── CENTERED RESUME LIGHTBOX MODAL ── */}
       {activeResumeStudent && (
