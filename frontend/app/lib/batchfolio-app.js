@@ -151,6 +151,11 @@ class BatchfolioApp {
         this.closeModal(this.resumesModal);
       }
     });
+
+    // Reset card spread when pointer leaves student grid
+    if (this.studentsGrid) {
+      this.studentsGrid.addEventListener('mouseleave', () => this.resetCardSpread());
+    }
   }
 
   /**
@@ -227,7 +232,7 @@ class BatchfolioApp {
             alt="${student.fullName}" 
             class="card-avatar-img"
             loading="lazy"
-            onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}&background=6366f1&color=fff&size=150';"
+            onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}&background=00638E&color=FFFFFF&size=150';"
           >
           <span class="avatar-badge-branch">${student.branch}</span>
         </div>
@@ -245,8 +250,26 @@ class BatchfolioApp {
       </article>
     `).join('');
 
-    // Attach click listener to each card for Enlarged Pop-out Modal
+    // Attach click listener to each card for Enlarged Pop-out Modal and wire up entrance observer
     const cards = this.studentsGrid.querySelectorAll('.student-card');
+
+    // Intersection observer for smooth, staggered fade-and-rise entrance
+    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+      const cardObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed');
+            cardObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.05, rootMargin: '0px 0px 40px 0px' });
+
+      cards.forEach((card, idx) => {
+        card.style.setProperty('--card-enter-delay', `${Math.min((idx % 8) * 45, 360)}ms`);
+        cardObserver.observe(card);
+      });
+    }
+
     cards.forEach(card => {
       const usn = card.getAttribute('data-usn');
       const clickHandler = () => this.openEnlargedStudentModal(usn);
@@ -259,6 +282,149 @@ class BatchfolioApp {
         }
       });
     });
+
+    // Initialize interactive mouse-hover & keyboard focus spread effect
+    this.initCardHoverSpread(cards);
+  }
+
+  /**
+   * Reset any active card spread effect
+   */
+  resetCardSpread() {
+    if (typeof this._spreadResetFn === 'function') {
+      this._spreadResetFn();
+    }
+  }
+
+  /**
+   * Interactive mouse-hover and keyboard focus spread effect on student cards:
+   * Staggered, slightly angled cards straighten, enlarge, and glow,
+   * while nearby cards gently move away and distant cards dim slightly.
+   */
+  initCardHoverSpread(cards) {
+    if (!cards || !cards.length) return;
+    if (typeof window === 'undefined') return;
+
+    // Check device capabilities: disable hover translations on touch devices or reduced motion
+    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!canHover || prefersReducedMotion) return;
+
+    let activeCard = null;
+    let cachedCenters = null;
+    let isTracking = false;
+
+    const computeCenters = () => {
+      cachedCenters = [];
+      cards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        cachedCenters.push({
+          card,
+          cx: rect.left + rect.width / 2 + window.scrollX,
+          cy: rect.top + rect.height / 2 + window.scrollY,
+        });
+      });
+    };
+
+    const resetSpread = () => {
+      activeCard = null;
+      isTracking = false;
+      cachedCenters = null;
+      cards.forEach(card => {
+        card.classList.remove('is-hovered-card', 'is-nearby-card', 'is-distant-card');
+        card.style.removeProperty('--spread-x');
+        card.style.removeProperty('--spread-y');
+        card.style.removeProperty('--spread-scale');
+        card.style.removeProperty('--spread-opacity');
+        card.style.removeProperty('--spread-rot');
+        card.style.removeProperty('z-index');
+      });
+    };
+
+    this._spreadResetFn = resetSpread;
+
+    const applySpread = (targetCard) => {
+      if (!targetCard) {
+        resetSpread();
+        return;
+      }
+      activeCard = targetCard;
+
+      if (!isTracking || !cachedCenters) {
+        computeCenters();
+        isTracking = true;
+      }
+
+      const activeEntry = cachedCenters.find(c => c.card === targetCard);
+      if (!activeEntry) return;
+
+      const targetX = activeEntry.cx;
+      const targetY = activeEntry.cy;
+      const spreadRadius = 460; // Influence threshold for neighbor cards
+
+      cachedCenters.forEach(item => {
+        const card = item.card;
+        if (card === targetCard) {
+          card.classList.add('is-hovered-card');
+          card.classList.remove('is-nearby-card', 'is-distant-card');
+          card.style.setProperty('--spread-x', '0px');
+          card.style.setProperty('--spread-y', '-8px');
+          card.style.setProperty('--spread-scale', '1.06');
+          card.style.setProperty('--spread-rot', '0deg');
+          card.style.setProperty('--spread-opacity', '1');
+          card.style.zIndex = '25';
+          return;
+        }
+
+        const dx = item.cx - targetX;
+        const dy = item.cy - targetY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist <= spreadRadius) {
+          card.classList.add('is-nearby-card');
+          card.classList.remove('is-hovered-card', 'is-distant-card');
+
+          const safeDist = Math.max(dist, 1);
+          const nx = dx / safeDist;
+          const ny = dy / safeDist;
+          const factor = 1 - (dist / spreadRadius);
+          const pushX = Math.round(nx * 14 * factor);
+          const pushY = Math.round(ny * 10 * factor);
+
+          card.style.setProperty('--spread-x', `${pushX}px`);
+          card.style.setProperty('--spread-y', `${pushY}px`);
+          card.style.setProperty('--spread-scale', '0.98');
+          card.style.setProperty('--spread-opacity', '0.88');
+          card.style.removeProperty('--spread-rot');
+          card.style.zIndex = '2';
+        } else {
+          card.classList.add('is-distant-card');
+          card.classList.remove('is-hovered-card', 'is-nearby-card');
+          card.style.setProperty('--spread-x', '0px');
+          card.style.setProperty('--spread-y', '0px');
+          card.style.setProperty('--spread-scale', '0.96');
+          card.style.setProperty('--spread-opacity', '0.58');
+          card.style.removeProperty('--spread-rot');
+          card.style.zIndex = '1';
+        }
+      });
+    };
+
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', () => applySpread(card));
+      card.addEventListener('focus', () => applySpread(card));
+      card.addEventListener('blur', () => {
+        setTimeout(() => {
+          if (!this.studentsGrid?.contains(document.activeElement)) {
+            resetSpread();
+          }
+        }, 20);
+      });
+    });
+
+    window.addEventListener('resize', () => {
+      if (isTracking) computeCenters();
+    }, { passive: true });
   }
 
   /**
@@ -279,7 +445,7 @@ class BatchfolioApp {
             src="${student.avatar}" 
             alt="${student.fullName}" 
             class="enlarged-avatar-img"
-            onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}&background=6366f1&color=fff&size=200';"
+            onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}&background=00638E&color=FFFFFF&size=200';"
           >
         </div>
 
@@ -396,7 +562,7 @@ class BatchfolioApp {
     this.resumesListContainer.innerHTML = list.map(student => `
       <div class="resume-list-item">
         <div class="resume-student-meta">
-          <img src="${student.avatar}" alt="${student.fullName}" class="resume-avatar-sm" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}&background=6366f1&color=fff';">
+          <img src="${student.avatar}" alt="${student.fullName}" class="resume-avatar-sm" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}&background=00638E&color=FFFFFF';">
           <div class="resume-info-text">
             <h4>${student.fullName}</h4>
             <p>${student.usn} • ${student.role}</p>

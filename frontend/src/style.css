@@ -4,40 +4,44 @@
    ========================================================================== */
 
 :root {
-  /* Color Palette */
-  --bg-dark: #0a0d14;
-  --bg-card: rgba(16, 22, 36, 0.75);
-  --bg-card-hover: rgba(22, 29, 48, 0.65);
-  --bg-card-border: rgba(255, 255, 255, 0.08);
-  --bg-glass: rgba(13, 17, 28, 0.72);
+  /* Color Palette — Nordic Slate & Dark Azure */
+  --bg-dark: #0c1218;
+  --bg-card: rgba(20, 26, 32, 0.82);
+  --bg-card-hover: rgba(26, 35, 44, 0.92);
+  --bg-card-border: rgba(140, 185, 204, 0.16);
+  --bg-glass: rgba(14, 20, 26, 0.85);
 
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --text-main: #FFFFFF;
+  --text-muted: #BFD8E3;
+  --text-dim: #8CB9CC;
 
-  /* Vibrant Accents */
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-glow: rgba(99, 102, 241, 0.45);
-  --secondary: #06b6d4;
-  --secondary-glow: rgba(6, 182, 212, 0.35);
-  --accent: #a855f7;
-  --success: #10b981;
+  /* Nordic Azure Accents */
+  --primary: #00638E;
+  --primary-hover: #004A6B;
+  --primary-glow: rgba(0, 99, 142, 0.35);
+  --secondary: #BFD8E3;
+  --secondary-glow: rgba(191, 216, 227, 0.2);
+  --accent: #00638E;
+  --accent-light: #8CB9CC;
+  --accent-soft: #BFD8E3;
+  --charcoal: #2B2B2B;
+  --onyx: #141414;
+  --success: #00638E;
 
   /* Gradients */
-  --gradient-brand: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #06b6d4 100%);
-  --gradient-card-border: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(6, 182, 212, 0.1), rgba(255, 255, 255, 0.05));
-  --gradient-glow: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 70%);
+  --gradient-brand: linear-gradient(135deg, #000000 0%, #004A6B 35%, #00638E 70%, #8CB9CC 100%);
+  --gradient-card-border: linear-gradient(135deg, rgba(0, 99, 142, 0.4), rgba(140, 185, 204, 0.12));
+  --gradient-glow: radial-gradient(circle, rgba(0, 99, 142, 0.2) 0%, transparent 70%);
 
   /* Typography */
-  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Syne', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Shadows & Blurs */
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 16px 36px -8px rgba(0, 0, 0, 0.55), 0 0 24px rgba(99, 102, 241, 0.12);
-  --shadow-modal: 0 25px 60px -12px rgba(0, 0, 0, 0.8), 0 0 35px rgba(99, 102, 241, 0.25);
-  --blur-glass: blur(16px);
+  --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 16px 40px -8px rgba(0, 0, 0, 0.6), 0 0 24px rgba(0, 99, 142, 0.15);
+  --shadow-modal: 0 24px 60px -12px rgba(0, 0, 0, 0.85), 0 0 35px rgba(0, 99, 142, 0.2);
+  --blur-glass: blur(14px);
   --transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
