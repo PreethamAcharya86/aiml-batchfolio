@@ -20,6 +20,7 @@ export default function ResumesPage() {
   const [error, setError] = useState("");
   const [filterMode, setFilterMode] = useState<"with-resume" | "all">("with-resume");
   const [activeResumeStudent, setActiveResumeStudent] = useState<Student | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     ApiService.getStudents()
@@ -81,7 +82,7 @@ export default function ResumesPage() {
       {/* ── NAVBAR ── */}
       <header className="navbar" id="main-nav">
         <div className="nav-container">
-          <Link href="/" className="brand-link" id="brand-logo-link">
+          <Link href="/" className="brand-link" id="brand-logo-link" onClick={() => setIsMobileMenuOpen(false)}>
             <div className="brand-logo-wrap">
               <img
                 src="/assets/artifera_logo.jpeg"
@@ -116,7 +117,71 @@ export default function ResumesPage() {
               Resumes
             </Link>
           </nav>
+
+          {/* Mobile Screen Toggle */}
+          <button
+            type="button"
+            className={`mobile-nav-toggle ${isMobileMenuOpen ? "active" : ""}`}
+            id="mobile-nav-toggle"
+            aria-label="Toggle navigation menu"
+            aria-expanded={isMobileMenuOpen}
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <span className="mobile-toggle-icon">
+              {isMobileMenuOpen ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="22" height="22">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="22" height="22">
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              )}
+            </span>
+          </button>
         </div>
+
+        {/* Mobile Dropdown Drawer */}
+        <div className={`mobile-nav-drawer ${isMobileMenuOpen ? "open" : ""}`}>
+          <div className="mobile-nav-links">
+            <Link
+              href="/"
+              className="mobile-nav-item"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+              <span>Home</span>
+            </Link>
+            <Link
+              href="/resumes"
+              className="mobile-nav-item active"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <span>Resume Portfolios</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Backdrop */}
+        {isMobileMenuOpen && (
+          <div
+            className="mobile-nav-backdrop"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+        )}
       </header>
 
       {/* ── MAIN CONTENT ── */}
@@ -137,10 +202,10 @@ export default function ResumesPage() {
           </div>
 
           {/* Controls Bar: Search & Filter Tabs */}
-          <div className="search-wrapper" style={{ marginBottom: "2.25rem", maxWidth: "860px", margin: "0 auto 2.25rem" }}>
+          <div className="search-wrapper" style={{ marginBottom: "2.5rem", maxWidth: "820px", margin: "0 auto 2.5rem" }}>
             <div className="search-bar-row">
               <div className="search-input-container">
-                <svg className="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg className="search-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
                   <circle cx="11" cy="11" r="8" />
                   <path d="m21 21-4.3-4.3" />
                 </svg>
@@ -168,15 +233,18 @@ export default function ResumesPage() {
               </div>
             </div>
 
-            <div className="filter-controls-row" style={{ marginTop: "1rem" }}>
+            {/* Filter Tabs & Counter placed below search bar */}
+            <div className="filter-controls-row" style={{ width: "100%", marginTop: "0.4rem" }}>
               <div className="filter-chips">
                 <button
+                  type="button"
                   className={`filter-chip ${filterMode === "with-resume" ? "active" : ""}`}
                   onClick={() => setFilterMode("with-resume")}
                 >
                   Resumes Available ({studentsWithResume.length})
                 </button>
                 <button
+                  type="button"
                   className={`filter-chip ${filterMode === "all" ? "active" : ""}`}
                   onClick={() => setFilterMode("all")}
                 >

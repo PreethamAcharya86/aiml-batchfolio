@@ -32,6 +32,8 @@ class BatchfolioApp {
     this.resumesModal = document.getElementById('resumes-modal');
     this.closeResumesModalBtn = document.getElementById('close-resumes-modal');
     this.navResumesBtn = document.getElementById('nav-btn-resumes');
+    this.navSearchBtn = document.getElementById('nav-btn-search');
+    this.searchActionBtn = document.getElementById('search-action-btn');
     this.footerResumesLink = document.getElementById('footer-resumes-link');
     this.resumesListContainer = document.getElementById('resumes-list-container');
     this.resumesFilterInput = document.getElementById('resumes-filter-input');
@@ -60,9 +62,9 @@ class BatchfolioApp {
     try {
       this.students = await ApiService.getStudents();
       this.filteredStudents = [...this.students];
-      this.totalCountEl.textContent = this.students.length;
-      this.strengthCounterEl.textContent = this.students.length;
-      this.footerStrengthEl.textContent = this.students.length;
+      if (this.totalCountEl) this.totalCountEl.textContent = this.students.length;
+      if (this.strengthCounterEl) this.strengthCounterEl.textContent = this.students.length;
+      if (this.footerStrengthEl) this.footerStrengthEl.textContent = this.students.length;
 
       if (this.students.length === 0) {
         this.studentsGrid.innerHTML = `
@@ -122,14 +124,24 @@ class BatchfolioApp {
       this.applyFilter();
     });
 
-    // Category filter chips
-    this.filterChipsContainer.addEventListener('click', (e) => {
-      const chip = e.target.closest('.filter-chip');
-      if (!chip) return;
-      const category = chip.getAttribute('data-category');
-      this.setActiveCategory(category);
-      this.applyFilter();
-    });
+    // Category filter chips (if present)
+    if (this.filterChipsContainer) {
+      this.filterChipsContainer.addEventListener('click', (e) => {
+        const chip = e.target.closest('.filter-chip');
+        if (!chip) return;
+        const category = chip.getAttribute('data-category');
+        this.setActiveCategory(category);
+        this.applyFilter();
+      });
+    }
+
+    // Navbar Search button click
+    if (this.navSearchBtn) {
+      this.navSearchBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.scrollToSearch();
+      });
+    }
 
     // Student Modal Close handlers
     this.closeStudentModalBtn.addEventListener('click', () => this.closeModal(this.studentModal));
@@ -144,13 +156,72 @@ class BatchfolioApp {
       });
     }
 
-    // Global keyboard listener (Escape to close any modal)
+    // Search action button click
+    if (this.searchActionBtn) {
+      this.searchActionBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.scrollToSearch();
+        this.searchInput?.focus();
+      });
+    }
+
+    // Global keyboard listener (Escape to close any modal, printable ASCII directly inputted into search)
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         this.closeModal(this.studentModal);
         this.closeModal(this.resumesModal);
+        return;
+      }
+
+      // Do not intercept if user is typing in an input, textarea, select, or contenteditable
+      const activeEl = document.activeElement;
+      const activeTag = activeEl?.tagName;
+      const isInputActive = ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeTag) || activeEl?.isContentEditable;
+
+      // Do not intercept if any modal is currently open
+      const isModalOpen = 
+        this.studentModal?.classList.contains('active') || 
+        this.resumesModal?.classList.contains('active') ||
+        document.querySelector('.modal.active, .modal.show, [role="dialog"][aria-hidden="false"]');
+
+      if (isInputActive || isModalOpen) {
+        return;
+      }
+
+      // Ignore shortcuts with Ctrl, Alt, or Meta/Command
+      if (e.ctrlKey || e.metaKey || e.altKey) {
+        return;
+      }
+
+      // Any printable ASCII character (from space ' ' to tilde '~')
+      if (e.key.length === 1 && e.key >= ' ' && e.key <= '~') {
+        e.preventDefault();
+        this.scrollToSearch();
+        if (this.searchInput) {
+          this.searchInput.focus();
+          this.searchInput.value += e.key;
+          // Trigger input event to run filtering immediately
+          this.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
       }
     });
+  }
+
+  /**
+   * Smoothly scroll so search bar sits perfectly flush beneath the sticky navbar
+   */
+  scrollToSearch() {
+    const searchSection = document.getElementById('search-section');
+    if (!searchSection) return;
+    const navbar = document.getElementById('main-nav');
+    const navHeight = navbar ? navbar.offsetHeight : 74;
+    const targetY = searchSection.getBoundingClientRect().top + window.scrollY - navHeight;
+    window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+    setTimeout(() => {
+      if (this.searchInput && document.activeElement !== this.searchInput) {
+        this.searchInput.focus({ preventScroll: true });
+      }
+    }, 350);
   }
 
   /**
@@ -158,14 +229,16 @@ class BatchfolioApp {
    */
   setActiveCategory(category) {
     this.currentCategory = category;
-    const chips = this.filterChipsContainer.querySelectorAll('.filter-chip');
-    chips.forEach(chip => {
-      if (chip.getAttribute('data-category') === category) {
-        chip.classList.add('active');
-      } else {
-        chip.classList.remove('active');
-      }
-    });
+    if (this.filterChipsContainer) {
+      const chips = this.filterChipsContainer.querySelectorAll('.filter-chip');
+      chips.forEach(chip => {
+        if (chip.getAttribute('data-category') === category) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+    }
   }
 
   /**
@@ -195,8 +268,8 @@ class BatchfolioApp {
    * Render student cards to the grid
    */
   renderStudents() {
-    this.visibleCountEl.textContent = this.filteredStudents.length;
-    this.totalCountEl.textContent = this.students.length;
+    if (this.visibleCountEl) this.visibleCountEl.textContent = this.filteredStudents.length;
+    if (this.totalCountEl) this.totalCountEl.textContent = this.students.length;
 
     if (this.filteredStudents.length === 0) {
       this.studentsGrid.innerHTML = '';
