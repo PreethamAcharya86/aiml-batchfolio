@@ -348,78 +348,15 @@ class BatchfolioApp {
           clickHandler();
         }
       });
-
-      if (!prefersReducedMotion) {
-        const handleHover = () => this.applyCardSpread(card, cards);
-        card.addEventListener('mouseenter', handleHover);
-        card.addEventListener('focus', handleHover);
-      }
     });
-
-    if (!prefersReducedMotion && !this.gridMouseLeaveAttached) {
-      this.gridMouseLeaveAttached = true;
-      this.studentsGrid.addEventListener('mouseleave', () => this.resetCardSpread());
-    }
   }
 
-  applyCardSpread(targetCard, cards) {
-    const targetRect = targetCard.getBoundingClientRect();
-    const targetCenterX = targetRect.left + targetRect.width / 2;
-    const targetCenterY = targetRect.top + targetRect.height / 2;
-    const influenceRadius = 340;
-
-    cards.forEach((card) => {
-      if (card === targetCard) {
-        card.classList.remove('is-nearby-card', 'is-distant-card');
-        card.classList.add('is-hovered-card');
-        card.style.setProperty('--spread-x', '0px');
-        card.style.setProperty('--spread-y', '-8px');
-        card.style.setProperty('--spread-scale', '1.06');
-        card.style.setProperty('--spread-rot', '0deg');
-        card.style.setProperty('--spread-opacity', '1');
-        return;
-      }
-
-      card.classList.remove('is-hovered-card');
-      const rect = card.getBoundingClientRect();
-      const cardCenterX = rect.left + rect.width / 2;
-      const cardCenterY = rect.top + rect.height / 2;
-
-      const dx = cardCenterX - targetCenterX;
-      const dy = cardCenterY - targetCenterY;
-      const dist = Math.hypot(dx, dy);
-
-      if (dist < influenceRadius && dist > 1) {
-        card.classList.add('is-nearby-card');
-        card.classList.remove('is-distant-card');
-        const factor = 1 - dist / influenceRadius;
-        const pushX = (dx / dist) * (18 * factor);
-        const pushY = (dy / dist) * (14 * factor);
-        card.style.setProperty('--spread-x', `${pushX.toFixed(1)}px`);
-        card.style.setProperty('--spread-y', `${pushY.toFixed(1)}px`);
-        card.style.setProperty('--spread-scale', `${(1 - 0.02 * factor).toFixed(2)}`);
-        card.style.setProperty('--spread-opacity', '0.92');
-      } else {
-        card.classList.add('is-distant-card');
-        card.classList.remove('is-nearby-card');
-        card.style.setProperty('--spread-x', '0px');
-        card.style.setProperty('--spread-y', '0px');
-        card.style.setProperty('--spread-scale', '0.98');
-        card.style.setProperty('--spread-opacity', '0.62');
-      }
-    });
+  applyCardSpread() {
+    // Disabled: cards are linearly arranged without displacement
   }
 
   resetCardSpread() {
-    const cards = this.studentsGrid.querySelectorAll('.student-card');
-    cards.forEach((card) => {
-      card.classList.remove('is-hovered-card', 'is-nearby-card', 'is-distant-card');
-      card.style.removeProperty('--spread-x');
-      card.style.removeProperty('--spread-y');
-      card.style.removeProperty('--spread-scale');
-      card.style.removeProperty('--spread-rot');
-      card.style.removeProperty('--spread-opacity');
-    });
+    // Disabled: cards are linearly arranged without displacement
   }
 
   /**

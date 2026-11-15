@@ -40,8 +40,8 @@
   --gradient-brand: linear-gradient(135deg, #000000 0%, #004A6B 35%, #00638E 70%, #8CB9CC 100%);
   --gradient-card-border: linear-gradient(135deg, rgba(0, 99, 142, 0.45), rgba(140, 185, 204, 0.12));
 
-  --font-heading: 'Syne', system-ui, sans-serif;
-  --font-body: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   color: var(--paper-white);
   font-family: var(--font-body);
@@ -79,7 +79,11 @@ body,
 
 .highlight-text,
 .hero-accent {
-  color: var(--light-azure) !important;
+  background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: #38bdf8 !important;
 }
 
 /* Restrained glass: navbar only */
@@ -115,11 +119,11 @@ textarea {
 }
 
 .hero-title {
-  font-size: clamp(3rem, 7.5vw, 6.8rem);
-  line-height: 0.96;
+  font-size: clamp(2.6rem, 5.8vw, 5.2rem);
+  line-height: 1;
   font-weight: 700;
   color: var(--paper-white);
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .stat-label,
@@ -209,12 +213,22 @@ textarea {
 /* ── HERO SECTION ────────────────────────────────────────────── */
 .hero-section {
   position: relative;
-  min-height: auto;
-  padding: 6.5rem 1.5rem 2rem;
+  min-height: calc(100vh - var(--navbar-height, 74px));
+  min-height: calc(100dvh - var(--navbar-height, 74px));
+  padding: 2.25rem 1.5rem 2rem;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: auto;
+    padding: 2rem 1rem 2rem;
+  }
 }
 
 /* ── BROAD FLOWING AURORA BANDS (Diagonal overlapping cyan & blue light waves) ── */
@@ -404,19 +418,22 @@ textarea {
   flex-direction: column;
   align-items: center;
   text-align: center;
+  justify-content: center;
+  gap: 1.5rem;
 }
 
 /* ── PROMINENT COLLEGE IDENTITY BANNER ───────────────────────── */
 .hero-college-banner {
   display: inline-flex;
   align-items: center;
-  gap: 1.15rem;
+  gap: 0.85rem;
   background: rgba(20, 20, 20, 0.78);
-  border: 1px solid rgba(140, 185, 204, 0.28);
-  border-radius: 20px;
-  padding: 0.85rem 1.65rem 0.85rem 1.15rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 10px 30px -6px rgba(0, 0, 0, 0.55), 0 0 24px rgba(0, 99, 142, 0.18);
+  border: 1px solid rgba(140, 185, 204, 0.24);
+  border-radius: 14px;
+  padding: 0.5rem 1.25rem 0.5rem 0.75rem;
+  margin-top: -0.65rem;
+  margin-bottom: 1.85rem;
+  box-shadow: 0 6px 22px -4px rgba(0, 0, 0, 0.55), 0 0 16px rgba(0, 99, 142, 0.15);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   text-align: left;
@@ -427,21 +444,21 @@ textarea {
 .hero-college-banner:hover {
   transform: translateY(-2px);
   border-color: rgba(0, 195, 255, 0.45);
-  box-shadow: 0 14px 36px -6px rgba(0, 0, 0, 0.65), 0 0 28px rgba(0, 180, 240, 0.24);
+  box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.65), 0 0 22px rgba(0, 180, 240, 0.22);
 }
 
 .college-logo-wrap {
-  width: 58px;
-  height: 58px;
-  min-width: 58px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 9px;
   background: #ffffff;
-  padding: 4px;
+  padding: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), 0 0 16px rgba(0, 99, 142, 0.25);
-  border: 1px solid rgba(140, 185, 204, 0.35);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 99, 142, 0.2);
+  border: 1px solid rgba(140, 185, 204, 0.3);
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -462,7 +479,7 @@ textarea {
 .college-name {
   color: var(--paper-white) !important;
   font-family: var(--font-heading);
-  font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+  font-size: clamp(0.86rem, 1.35vw, 1.08rem);
   font-weight: 700;
   letter-spacing: -0.015em;
   line-height: 1.25;
@@ -471,32 +488,67 @@ textarea {
 
 .college-dept {
   color: var(--light-azure);
-  font-size: clamp(0.82rem, 1.25vw, 0.92rem);
+  font-size: clamp(0.72rem, 0.95vw, 0.8rem);
   font-weight: 500;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.015em;
   opacity: 0.92;
-  margin: 0.25rem 0 0 0;
-  line-height: 1.35;
+  margin: 0.15rem 0 0 0;
+  line-height: 1.3;
 }
 
 @media (max-width: 640px) {
   .hero-college-banner {
-    flex-direction: column;
-    text-align: center;
-    padding: 1.15rem 1.25rem;
-    gap: 0.75rem;
-    border-radius: 16px;
-    margin-bottom: 1.5rem;
+    flex-direction: row !important;
+    text-align: left !important;
+    padding: 0.45rem 0.9rem 0.45rem 0.6rem !important;
+    gap: 0.65rem !important;
+    border-radius: 12px !important;
+    margin-top: -0.35rem !important;
+    margin-bottom: 1.25rem !important;
+    max-width: 95vw !important;
   }
 
   .college-logo-wrap {
-    width: 52px;
-    height: 52px;
-    min-width: 52px;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    padding: 2px !important;
+    border-radius: 8px !important;
   }
 
   .college-identity-text {
-    align-items: center;
+    align-items: flex-start !important;
+  }
+
+  .college-name {
+    font-size: 0.84rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .college-dept {
+    font-size: 0.68rem !important;
+    line-height: 1.25 !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .hero-college-banner {
+    padding: 0.4rem 0.75rem 0.4rem 0.5rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .college-logo-wrap {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+  }
+
+  .college-name {
+    font-size: 0.78rem !important;
+  }
+
+  .college-dept {
+    font-size: 0.64rem !important;
   }
 }
 
@@ -521,15 +573,16 @@ textarea {
 }
 
 .hero-content {
-  max-width: 840px;
-  margin-bottom: 1.75rem;
+  max-width: 860px;
+  margin-bottom: 2rem;
+  padding: 0.5rem 1rem;
 }
 
 .hero-description {
   color: var(--light-azure-muted);
   font-size: 1.05rem;
-  line-height: 1.65;
-  max-width: 640px;
+  line-height: 1.6;
+  max-width: 650px;
   margin: 0 auto;
 }
 
@@ -540,7 +593,7 @@ textarea {
   gap: 1rem;
   width: 100%;
   max-width: 1120px;
-  margin-top: 1.5rem;
+  margin-top: 0.5rem;
   margin-bottom: 0;
 }
 
@@ -766,20 +819,23 @@ textarea {
 .section-title {
   font-family: var(--font-heading);
   font-size: clamp(1.85rem, 3.5vw, 2.5rem);
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  color: var(--paper-white);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #ffffff;
   line-height: 1.25;
   margin: 0 0 0.65rem 0;
   display: block;
 }
 
 .section-desc {
-  font-size: 0.95rem;
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  font-weight: 400;
   color: var(--light-azure-muted, var(--text-muted));
   margin: 0 auto;
   max-width: 650px;
-  line-height: 1.5;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
 }
 
 /* ── SCROLL-TRIGGERED SPREAD ANIMATION (.section-container) ──── */
@@ -902,40 +958,16 @@ textarea {
   overflow: hidden;
   animation: card-fade-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: var(--card-enter-delay, 0s);
-  will-change: transform, opacity;
+  will-change: transform, box-shadow;
 
-  /* Spread state variables */
-  --base-rot: 0deg;
-  --spread-x: 0px;
-  --spread-y: 0px;
-  --spread-scale: 1;
-  --spread-rot: var(--base-rot, 0deg);
-  --spread-opacity: 1;
-  transform: translate3d(var(--spread-x, 0px), var(--spread-y, 0px), 0) scale(var(--spread-scale, 1)) rotate(var(--spread-rot, var(--base-rot, 0deg))) !important;
-  opacity: var(--spread-opacity, 1);
+  /* Linearly arranged with zero rotation */
+  transform: none !important;
+  opacity: 1 !important;
   transform-origin: center center;
-  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.35s ease,
-    border-color 0.28s ease,
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow 0.28s ease,
+    border-color 0.28s ease,
     background 0.28s ease !important;
-}
-
-/* Staggered alternating resting angles for organic, slightly angled layout */
-.students-grid .student-card:nth-child(4n + 1) {
-  --base-rot: -1.2deg;
-}
-
-.students-grid .student-card:nth-child(4n + 2) {
-  --base-rot: 1deg;
-}
-
-.students-grid .student-card:nth-child(4n + 3) {
-  --base-rot: -0.8deg;
-}
-
-.students-grid .student-card:nth-child(4n + 4) {
-  --base-rot: 1.2deg;
 }
 
 /* Stagger fallback delays for smooth initial loading */
@@ -975,22 +1007,30 @@ textarea {
   animation-delay: 0.28s;
 }
 
-/* Active Hovered & Focused Card: Bring forward, enlarge, straighten angle, blue/cyan glow */
+/* Active Hovered & Focused Card: Clean linear lift with vibrant glowing aura */
 .student-card:hover,
 .student-card:focus-visible,
 .student-card.is-hovered-card {
-  --spread-y: -8px;
-  --spread-scale: 1.06;
-  --spread-rot: 0deg !important;
-  --spread-opacity: 1 !important;
-  z-index: 25 !important;
-  background: rgba(22, 27, 34, 0.94) !important;
-  border-color: rgba(0, 195, 255, 0.65) !important;
-  border-top-color: rgba(191, 235, 255, 0.9) !important;
-  /* Brighter top edge highlight */
-  box-shadow: 0 18px 40px -8px rgba(0, 0, 0, 0.78),
-    0 0 28px rgba(0, 195, 255, 0.35),
+  transform: translateY(-5px) !important;
+  z-index: 10 !important;
+  background: linear-gradient(145deg, rgba(20, 28, 48, 0.95), rgba(13, 19, 33, 0.96)) !important;
+  border-color: #06b6d4 !important;
+  border-top-color: #38bdf8 !important;
+  /* Luminous neon cyan & indigo cyber glow */
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.75),
+    0 0 24px rgba(6, 182, 212, 0.45),
+    0 0 48px rgba(99, 102, 241, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.student-card:hover .card-name {
+  color: #38bdf8 !important;
+  text-shadow: 0 0 14px rgba(56, 189, 248, 0.5) !important;
+}
+
+.student-card:hover .avatar-circle {
+  border-color: #06b6d4 !important;
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.55) !important;
 }
 
 /* Keyboard accessibility: distinct blue focus ring */
@@ -999,17 +1039,11 @@ textarea {
   outline-offset: 3px !important;
 }
 
-/* Nearby neighbor cards: slightly displaced away */
-.student-card.is-nearby-card {
-  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.35s ease !important;
-}
-
-/* Distant cards: dimmed slightly */
+/* Neighbor cards remain firmly in place with full opacity */
+.student-card.is-nearby-card,
 .student-card.is-distant-card {
-  opacity: var(--spread-opacity, 0.58) !important;
-  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.35s ease !important;
+  transform: none !important;
+  opacity: 1 !important;
 }
 
 /* Keep card text and details crystal-clear (override legacy blur overlay) */
@@ -1443,4 +1477,58 @@ textarea {
     grid-template-columns: 1fr;
     max-width: 100%;
   }
+}
+
+/* ── MOBILE NAVIGATION DRAWER THEME OVERRIDES ────────────────── */
+.mobile-nav-drawer {
+  background: radial-gradient(ellipse 90% 70% at 85% 0%, rgba(0, 195, 255, 0.12) 0%, transparent 65%),
+              radial-gradient(ellipse 80% 60% at 15% 100%, rgba(0, 99, 142, 0.2) 0%, transparent 60%),
+              rgba(8, 14, 22, 0.97) !important;
+  border-bottom: 1px solid rgba(140, 185, 204, 0.25) !important;
+  box-shadow: 0 24px 48px -8px rgba(0, 0, 0, 0.85), 0 0 30px rgba(0, 99, 142, 0.2) !important;
+}
+
+.mobile-profile-section {
+  background: linear-gradient(135deg, rgba(14, 24, 38, 0.85) 0%, rgba(8, 14, 24, 0.9) 100%) !important;
+  border: 1px solid rgba(140, 185, 204, 0.24) !important;
+}
+
+.mobile-nav-item {
+  color: var(--light-azure) !important;
+}
+
+.mobile-nav-item:hover,
+.mobile-nav-item:active,
+.mobile-nav-item.active {
+  color: #ffffff !important;
+  background: rgba(0, 99, 142, 0.22) !important;
+  border-color: rgba(140, 185, 204, 0.3) !important;
+}
+
+.mobile-nav-item svg {
+  color: #38bdf8 !important;
+}
+
+.mobile-user-usn {
+  color: #38bdf8 !important;
+}
+
+.mobile-guest-icon-wrap {
+  background: linear-gradient(135deg, rgba(0, 99, 142, 0.35), rgba(0, 195, 255, 0.15)) !important;
+  border-color: rgba(140, 185, 204, 0.35) !important;
+  color: var(--light-azure) !important;
+}
+
+.mobile-nav-toggle {
+  background: rgba(14, 22, 34, 0.7) !important;
+  border: 1px solid rgba(140, 185, 204, 0.25) !important;
+  color: var(--light-azure) !important;
+}
+
+.mobile-nav-toggle:hover,
+.mobile-nav-toggle.active {
+  background: rgba(0, 99, 142, 0.28) !important;
+  border-color: #00c3ff !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 14px rgba(0, 195, 255, 0.35) !important;
 }
