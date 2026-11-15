@@ -120,8 +120,8 @@ export default function OtpVerificationModal({
         </button>
 
         <div className="auth-header" style={{ marginBottom: "1.75rem" }}>
-          <div className="auth-logo-badge" style={{ background: "rgba(99, 102, 241, 0.15)", borderColor: "rgba(99, 102, 241, 0.4)" }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="2" width="28" height="28">
+          <div className="auth-logo-badge" style={{ background: "rgba(0, 99, 142, 0.18)", borderColor: "rgba(140, 185, 204, 0.3)" }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--light-azure, #BFD8E3)" strokeWidth="2" width="28" height="28">
               <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
@@ -131,7 +131,7 @@ export default function OtpVerificationModal({
           </h2>
           <p className="auth-subtitle" style={{ fontSize: "0.88rem", marginTop: "0.35rem" }}>
             Enter the 6-digit code sent to{" "}
-            <strong style={{ color: "#67e8f9" }}>{maskedEmail || "your email"}</strong> to access profile editing.
+            <strong style={{ color: "#BFD8E3" }}>{maskedEmail || "your email"}</strong> to access profile editing.
           </p>
         </div>
 
@@ -173,9 +173,9 @@ export default function OtpVerificationModal({
                 textAlign: "center",
                 padding: "0.75rem 0.5rem",
                 borderRadius: "10px",
-                border: "1px solid rgba(99, 102, 241, 0.45)",
-                background: "rgba(10, 14, 26, 0.85)",
-                color: "#67e8f9",
+                border: "1px solid rgba(140, 185, 204, 0.35)",
+                background: "rgba(20, 20, 20, 0.85)",
+                color: "#FFFFFF",
                 width: "100%",
               }}
               autoFocus

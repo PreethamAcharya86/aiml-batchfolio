@@ -348,7 +348,7 @@ export default function ResumesPage() {
                   alt={activeResumeStudent.fullName}
                   className="resume-modal-avatar"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeResumeStudent.fullName)}&background=6366f1&color=fff&size=80`;
+                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeResumeStudent.fullName)}&background=00638E&color=FFFFFF&size=80`;
                   }}
                 />
                 <div className="resume-modal-title-block">
@@ -547,7 +547,7 @@ function ResumeCard({
               alt={student.fullName}
               className="resume-vault-avatar"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}&background=6366f1&color=fff&size=80`;
+                (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}&background=00638E&color=FFFFFF&size=80`;
               }}
             />
           </div>

@@ -149,7 +149,7 @@ export function getLoggedInUser() {
 
 // ── Normalize a backend student row → frontend shape ─────────────────────────
 function normalizeStudent(row) {
-  const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(row.name)}&background=6366f1&color=fff&size=200`;
+  const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(row.name)}&background=00638E&color=FFFFFF&size=200`;
 
   return {
     id:       row.id,
