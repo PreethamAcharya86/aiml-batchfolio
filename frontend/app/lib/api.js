@@ -34,6 +34,58 @@ async function apiFetch(path, options = {}) {
   }
 }
 
+// ── Student Data Cache (Memory + sessionStorage) ───────────────────────────
+const STUDENTS_CACHE_KEY = 'batchfolio_students_cache';
+const STUDENTS_CACHE_TIME_KEY = 'batchfolio_students_cache_time';
+const STUDENTS_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes cache
+
+let memoryStudentsCache = null;
+let memoryStudentsCacheTime = 0;
+
+export function getCachedStudents() {
+  if (memoryStudentsCache && (Date.now() - memoryStudentsCacheTime < STUDENTS_CACHE_TTL_MS)) {
+    return memoryStudentsCache;
+  }
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = sessionStorage.getItem(STUDENTS_CACHE_KEY);
+      const storedTime = parseInt(sessionStorage.getItem(STUDENTS_CACHE_TIME_KEY) || '0', 10);
+      if (stored && (Date.now() - storedTime < STUDENTS_CACHE_TTL_MS)) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          memoryStudentsCache = parsed;
+          memoryStudentsCacheTime = storedTime;
+          return parsed;
+        }
+      }
+    } catch {}
+  }
+  return null;
+}
+
+export function setCachedStudents(students) {
+  if (!Array.isArray(students)) return;
+  memoryStudentsCache = students;
+  memoryStudentsCacheTime = Date.now();
+  if (typeof window !== 'undefined') {
+    try {
+      sessionStorage.setItem(STUDENTS_CACHE_KEY, JSON.stringify(students));
+      sessionStorage.setItem(STUDENTS_CACHE_TIME_KEY, String(memoryStudentsCacheTime));
+    } catch {}
+  }
+}
+
+export function invalidateStudentsCache() {
+  memoryStudentsCache = null;
+  memoryStudentsCacheTime = 0;
+  if (typeof window !== 'undefined') {
+    try {
+      sessionStorage.removeItem(STUDENTS_CACHE_KEY);
+      sessionStorage.removeItem(STUDENTS_CACHE_TIME_KEY);
+    } catch {}
+  }
+}
+
 // ── Token & Session helpers (SSR Safe, 24-Hour Multi-Tab Persistence) ────────
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -191,18 +243,36 @@ export const ApiService = {
     }
   },
 
+  getCachedStudents() {
+    return getCachedStudents();
+  },
+
+  invalidateStudentsCache() {
+    invalidateStudentsCache();
+  },
+
   /**
    * GET /api/students
-   * Returns all students from the DB. Shows empty state if none exist yet.
+   * Returns all students from the DB or cache if fresh.
    */
-  async getStudents() {
+  async getStudents(forceRefresh = false) {
+    if (!forceRefresh) {
+      const cached = getCachedStudents();
+      if (cached && cached.length > 0) {
+        return cached;
+      }
+    }
     const res = await apiFetch('/students');
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || 'Failed to load students');
     }
     const rows = await res.json();
-    return Array.isArray(rows) ? rows.map(normalizeStudent) : [];
+    const students = Array.isArray(rows) ? rows.map(normalizeStudent) : [];
+    if (students.length > 0) {
+      setCachedStudents(students);
+    }
+    return students;
   },
 
   /** GET /api/students/{usn} */
@@ -266,6 +336,7 @@ export const ApiService = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Update failed');
+    invalidateStudentsCache();
     return data;
   },
 
@@ -282,6 +353,7 @@ export const ApiService = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed to upload profile picture');
+    invalidateStudentsCache();
     return data;
   },
 
@@ -295,6 +367,7 @@ export const ApiService = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed to remove profile picture');
+    invalidateStudentsCache();
     return data;
   },
 
@@ -311,6 +384,7 @@ export const ApiService = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed to upload resume');
+    invalidateStudentsCache();
     return data;
   },
 
@@ -324,6 +398,7 @@ export const ApiService = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed to remove resume');
+    invalidateStudentsCache();
     return data;
   },
 
@@ -337,6 +412,7 @@ export const ApiService = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed to delete profile');
+    invalidateStudentsCache();
     return data;
   },
 

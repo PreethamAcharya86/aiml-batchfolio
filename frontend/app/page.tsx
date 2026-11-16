@@ -120,7 +120,7 @@ export default function HomePage() {
           }
         });
       },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0, rootMargin: "0px 0px 0px 0px" }
     );
     els.forEach((el, i) => {
       (el as HTMLElement).style.transitionDelay = `${Math.min(i * 60, 700)}ms`;
@@ -132,16 +132,37 @@ export default function HomePage() {
   function scrollToSearch(e?: React.MouseEvent) {
     if (e) e.preventDefault();
     const searchSection = document.getElementById("search-section");
-    const searchInput = document.getElementById("student-search-input");
-    if (searchSection) {
-      const navbar = document.getElementById("main-nav");
-      const navHeight = navbar ? navbar.offsetHeight : 74;
-      const targetY = searchSection.getBoundingClientRect().top + window.scrollY - navHeight;
-      window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
-      setTimeout(() => {
-        searchInput?.focus({ preventScroll: true });
-      }, 350);
+    const searchInput = document.getElementById("student-search-input") as HTMLInputElement | null;
+    if (!searchSection) return;
+
+    const navbar = document.getElementById("main-nav");
+    const navHeight = navbar ? navbar.offsetHeight : 74;
+
+    let elementTop = 0;
+    const heroSection = document.getElementById("hero-section");
+    if (heroSection) {
+      let heroTop = 0;
+      let curr: HTMLElement | null = heroSection;
+      while (curr) {
+        heroTop += curr.offsetTop || 0;
+        curr = curr.offsetParent as HTMLElement | null;
+      }
+      elementTop = heroTop + heroSection.offsetHeight;
+    } else {
+      let curr: HTMLElement | null = searchSection;
+      while (curr) {
+        elementTop += curr.offsetTop || 0;
+        curr = curr.offsetParent as HTMLElement | null;
+      }
     }
+
+    const targetY = Math.max(0, elementTop - navHeight);
+
+    if (Math.abs(window.scrollY - targetY) > 20) {
+      window.scrollTo({ top: targetY, behavior: "smooth" });
+    }
+
+    searchInput?.focus({ preventScroll: true });
   }
 
   function openLogin() {
@@ -471,23 +492,6 @@ export default function HomePage() {
             </svg>
           </div>
           <div className="hero-container">
-            <div className="hero-college-banner animate-fade">
-              <div className="college-logo-wrap">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/assets/MITE_logo.png"
-                  alt="Mangalore Institute of Technology & Engineering Logo"
-                  className="college-logo-img"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = "/assets/MITE_Logo.jpg";
-                  }}
-                />
-              </div>
-              <div className="college-identity-text">
-                <h2 className="college-name">Mangalore Institute of Technology &amp; Engineering</h2>
-                <p className="college-dept">Department of Artificial Intelligence &amp; Machine Learning</p>
-              </div>
-            </div>
             <div className="hero-content">
               <h1 className="hero-title">
                 <span className="hero-line-mask">
@@ -581,15 +585,7 @@ export default function HomePage() {
                 </button>
               </div>
             </div>
-            <div className="filter-controls-row">
-              <div className="filter-chips" id="filter-chips-container">
-                <button className="filter-chip active" data-category="ALL">All Students</button>
-                <button className="filter-chip" data-category="AI/ML">AI &amp; Machine Learning</button>
-              </div>
-              <div className="students-counter" id="students-counter">
-                Showing <strong id="visible-count">63</strong> of <strong id="total-count">63</strong> Students
-              </div>
-            </div>
+
           </div>
         </section>
 

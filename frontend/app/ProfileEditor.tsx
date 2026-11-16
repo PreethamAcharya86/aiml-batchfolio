@@ -119,6 +119,7 @@ export default function ProfileEditor() {
 
   const [isDraggingAvatar, setIsDraggingAvatar] = useState(false);
   const [isDraggingResume, setIsDraggingResume] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Crop modal state
   const [cropSrc, setCropSrc] = useState<string | null>(null);
@@ -470,6 +471,160 @@ export default function ProfileEditor() {
     router.push("/");
   }
 
+  const renderMobileNavbar = () => (
+    <header className="navbar profile-mobile-navbar" id="main-nav">
+      <div className="nav-container">
+        <Link href="/" className="brand-link" id="brand-logo-link" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="brand-logo-wrap">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/artifera_logo.jpeg" alt="Artifera Logo" className="nav-logo" id="nav-artifera-logo" />
+          </div>
+          <div className="brand-text">
+            <span className="brand-title">
+              AIML <span className="highlight-text">Batchfolio</span>
+            </span>
+            <span className="brand-subtitle">Class of 2024–2028</span>
+          </div>
+        </Link>
+
+        {/* Mobile Screen Navbar Toggle Button */}
+        <button
+          type="button"
+          className={`mobile-nav-toggle ${isMobileMenuOpen ? "active" : ""}`}
+          id="mobile-nav-toggle"
+          aria-label="Toggle navigation menu"
+          aria-expanded={isMobileMenuOpen}
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          {profile && (
+            <span className="mobile-toggle-user-badge">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={profilePictureUrl || profile.profile_picture_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=00638E&color=FFFFFF&size=200`}
+                alt={profile.name}
+                className="mobile-toggle-avatar"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=00638E&color=FFFFFF&size=200`;
+                }}
+              />
+              <span className="mobile-toggle-mini-dot"></span>
+            </span>
+          )}
+          <span className="mobile-toggle-icon">
+            {isMobileMenuOpen ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="22" height="22">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="22" height="22">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            )}
+          </span>
+        </button>
+      </div>
+
+      {/* Mobile Dropdown Drawer */}
+      <div className={`mobile-nav-drawer ${isMobileMenuOpen ? "open" : ""}`} id="mobile-nav-drawer">
+        {/* Profile Section */}
+        <div className="mobile-profile-section">
+          {profile && (
+            <div className="mobile-user-card">
+              <div className="mobile-user-header">
+                <div className="mobile-user-avatar-wrap">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={profilePictureUrl || profile.profile_picture_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=00638E&color=FFFFFF&size=200`}
+                    alt={profile.name}
+                    className="mobile-user-avatar"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=00638E&color=FFFFFF&size=200`;
+                    }}
+                  />
+                  <span className="mobile-user-status-dot"></span>
+                </div>
+                <div className="mobile-user-info">
+                  <h4 className="mobile-user-name">{profile.name}</h4>
+                  <span className="mobile-user-usn">{profile.usn}</span>
+                  {profile.email && (
+                    <span className="mobile-user-email">{profile.email}</span>
+                  )}
+                </div>
+              </div>
+              <div className="mobile-user-actions">
+                <Link
+                  href="/"
+                  className="btn btn-primary mobile-edit-profile-btn"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                  </svg>
+                  <span>Back to Students</span>
+                </Link>
+                <button
+                  type="button"
+                  className="btn btn-outline mobile-logout-btn"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    logout();
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                  </svg>
+                  <span>Logout</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation Links */}
+        <div className="mobile-nav-links">
+          <Link
+            href="/"
+            className="mobile-nav-item"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>Home (Students)</span>
+          </Link>
+          <Link
+            href="/resumes"
+            className="mobile-nav-item"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>Resume Portfolios</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Mobile Backdrop */}
+      {isMobileMenuOpen && (
+        <div
+          className="mobile-nav-backdrop"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+    </header>
+  );
+
   if (isLoading) {
     return (
       <main className="profile-page profile-loading-viewport">
@@ -513,19 +668,24 @@ export default function ProfileEditor() {
 
   if (profile.email && !isOtpVerifiedState) {
     return (
-      <main className="profile-page">
-        <section className="profile-panel" style={{ maxWidth: "500px", margin: "2rem auto" }}>
-          <ProfileInlineOtp
-            studentName={profile.name}
-            onVerified={() => setIsOtpVerifiedState(true)}
-          />
-        </section>
-      </main>
+      <>
+        {renderMobileNavbar()}
+        <main className="profile-page">
+          <section className="profile-panel" style={{ maxWidth: "500px", margin: "2rem auto" }}>
+            <ProfileInlineOtp
+              studentName={profile.name}
+              onVerified={() => setIsOtpVerifiedState(true)}
+            />
+          </section>
+        </main>
+      </>
     );
   }
 
   return (
-    <main className="profile-page">
+    <>
+      {renderMobileNavbar()}
+      <main className="profile-page">
       <section className="profile-panel">
         <div className="profile-heading">
           <div>
@@ -1041,6 +1201,7 @@ export default function ProfileEditor() {
         />
       )}
     </main>
+  </>
   );
 }
 

@@ -48,9 +48,22 @@ class BatchfolioApp {
   }
 
   /**
-   * Load students from backend API (real data only — no mocks)
+   * Load students from backend API (with instant cache support)
    */
-  async loadData() {
+  async loadData(forceRefresh = false) {
+    // Check cache first for instantaneous rendering without loading spinner
+    const cached = !forceRefresh && ApiService.getCachedStudents ? ApiService.getCachedStudents() : null;
+    if (cached && cached.length > 0) {
+      this.students = cached;
+      this.filteredStudents = [...this.students];
+      if (this.totalCountEl) this.totalCountEl.textContent = this.students.length;
+      if (this.strengthCounterEl) this.strengthCounterEl.textContent = this.students.length;
+      if (this.footerStrengthEl) this.footerStrengthEl.textContent = this.students.length;
+      this.renderStudents();
+      this.renderResumesList();
+      return;
+    }
+
     this.studentsGrid.innerHTML = `
       <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
         <div style="font-size: 2rem; margin-bottom: 1rem;">⏳</div>
@@ -60,7 +73,7 @@ class BatchfolioApp {
     `;
 
     try {
-      this.students = await ApiService.getStudents();
+      this.students = await ApiService.getStudents(forceRefresh);
       this.filteredStudents = [...this.students];
       if (this.totalCountEl) this.totalCountEl.textContent = this.students.length;
       if (this.strengthCounterEl) this.strengthCounterEl.textContent = this.students.length;
@@ -88,7 +101,7 @@ class BatchfolioApp {
           <p style="color: #94a3b8; font-size: 0.95rem; max-width: 480px; margin: 0 auto 1.5rem;">
             Unable to reach the API server. Please check your connection or try again.
           </p>
-          <button class="btn btn-outline" onclick="window.batchfolioApp.loadData()">&#8635; Retry</button>
+          <button class="btn btn-outline" onclick="window.batchfolioApp.loadData(true)">&#8635; Retry</button>
         </div>
       `;
       this.showToast('Could not load student data', 'error');
@@ -112,7 +125,7 @@ class BatchfolioApp {
       this.searchQuery = '';
       this.searchClearBtn.style.display = 'none';
       this.applyFilter();
-      this.searchInput.focus();
+      this.searchInput.focus({ preventScroll: true });
     });
 
     // Reset button in empty state
@@ -161,7 +174,7 @@ class BatchfolioApp {
       this.searchActionBtn.addEventListener('click', (e) => {
         e.preventDefault();
         this.scrollToSearch();
-        this.searchInput?.focus();
+        this.searchInput?.focus({ preventScroll: true });
       });
     }
 
@@ -177,14 +190,15 @@ class BatchfolioApp {
       const activeEl = document.activeElement;
       const activeTag = activeEl?.tagName;
       const isInputActive = ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeTag) || activeEl?.isContentEditable;
+      const isInteractiveElement = ['BUTTON', 'A'].includes(activeTag) || !!activeEl?.closest('button, a, [role="button"]');
 
-      // Do not intercept if any modal is currently open
+      // Do not intercept if any modal is currently open or focused on interactive element
       const isModalOpen = 
         this.studentModal?.classList.contains('active') || 
         this.resumesModal?.classList.contains('active') ||
         document.querySelector('.modal.active, .modal.show, [role="dialog"][aria-hidden="false"]');
 
-      if (isInputActive || isModalOpen) {
+      if (isInputActive || isInteractiveElement || isModalOpen) {
         return;
       }
 
@@ -193,12 +207,17 @@ class BatchfolioApp {
         return;
       }
 
+      // Do not intercept standalone spacebar when search input is empty (allows natural page scrolling)
+      if (e.key === ' ' && !this.searchInput?.value) {
+        return;
+      }
+
       // Any printable ASCII character (from space ' ' to tilde '~')
       if (e.key.length === 1 && e.key >= ' ' && e.key <= '~') {
         e.preventDefault();
         this.scrollToSearch();
         if (this.searchInput) {
-          this.searchInput.focus();
+          this.searchInput.focus({ preventScroll: true });
           this.searchInput.value += e.key;
           // Trigger input event to run filtering immediately
           this.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -208,20 +227,45 @@ class BatchfolioApp {
   }
 
   /**
-   * Smoothly scroll so search bar sits perfectly flush beneath the sticky navbar
+   * Smoothly scroll so search bar sits flush right below the sticky navbar
    */
   scrollToSearch() {
     const searchSection = document.getElementById('search-section');
     if (!searchSection) return;
+
     const navbar = document.getElementById('main-nav');
     const navHeight = navbar ? navbar.offsetHeight : 74;
-    const targetY = searchSection.getBoundingClientRect().top + window.scrollY - navHeight;
-    window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
-    setTimeout(() => {
-      if (this.searchInput && document.activeElement !== this.searchInput) {
-        this.searchInput.focus({ preventScroll: true });
+
+    // Calculate document-absolute top of search section (its natural un-stuck position)
+    let elementTop = 0;
+    const heroSection = document.getElementById('hero-section');
+    if (heroSection) {
+      let heroTop = 0;
+      let curr = heroSection;
+      while (curr) {
+        heroTop += curr.offsetTop || 0;
+        curr = curr.offsetParent;
       }
-    }, 350);
+      elementTop = heroTop + heroSection.offsetHeight;
+    } else {
+      let curr = searchSection;
+      while (curr) {
+        elementTop += curr.offsetTop || 0;
+        curr = curr.offsetParent;
+      }
+    }
+
+    // Target scroll so the search section sits clearly beneath navbar
+    const targetY = Math.max(0, elementTop - navHeight);
+
+    // Only scroll if we aren't already positioned at the search bar section
+    if (Math.abs(window.scrollY - targetY) > 20) {
+      window.scrollTo({ top: targetY, behavior: 'smooth' });
+    }
+
+    if (this.searchInput) {
+      this.searchInput.focus({ preventScroll: true });
+    }
   }
 
   /**

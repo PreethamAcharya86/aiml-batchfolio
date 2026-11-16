@@ -744,12 +744,8 @@ h1, h2, h3, h4, h5, h6 {
    CENTER SEARCH BAR SECTION
    ========================================================================== */
 .search-section {
-  position: relative;
-  z-index: 10;
-  padding: 1.5rem 1.5rem 1rem;
-  background: transparent;
+  /* sticky positioning handled by theme.css */
   scroll-margin-top: calc(var(--navbar-height, 74px) + 16px);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .search-wrapper {
@@ -1723,15 +1719,21 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .loader-title {
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: pulseText 1.4s ease-in-out infinite alternate;
+  color: #f1f5f9;
+  -webkit-text-fill-color: #f1f5f9;
+  text-shadow: none !important;
+  filter: none !important;
+  -webkit-font-smoothing: antialiased;
+  animation: pulseOpacity 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes pulseOpacity {
+  0% { opacity: 0.7; }
+  100% { opacity: 1; }
 }
 
 .loader-progress-track {

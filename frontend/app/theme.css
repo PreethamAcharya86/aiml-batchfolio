@@ -685,15 +685,19 @@ textarea {
 
 /* ── SEARCH & FILTER CONTROLS ───────────────────────────────── */
 .search-section {
-  position: relative !important;
-  top: auto !important;
-  z-index: 5 !important;
-  padding: 1.5rem 1.5rem 1.25rem !important;
-  max-width: 1240px;
-  margin: 0 auto;
+  position: sticky !important;
+  top: var(--navbar-height, 74px) !important;
+  z-index: 90 !important;
+  padding: 0.75rem 1.5rem !important;
   background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
   border-bottom: none !important;
   box-shadow: none !important;
+  pointer-events: none;
+  max-width: unset;
+  margin: 0;
 }
 
 .search-wrapper {
@@ -704,6 +708,7 @@ textarea {
   align-items: center;
   width: 100%;
   gap: 1.15rem;
+  pointer-events: auto;
 }
 
 .filter-controls-row {
@@ -718,15 +723,19 @@ textarea {
 }
 
 .search-input-container {
-  background: rgba(20, 20, 20, 0.85) !important;
-  border: 1px solid var(--bg-card-border) !important;
+  background: rgba(10, 16, 26, 0.88) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(140, 185, 204, 0.22) !important;
   border-radius: 999px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 99, 142, 0.2) !important;
+  pointer-events: auto !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .search-input-container:focus-within {
-  border-color: var(--light-azure-muted) !important;
-  box-shadow: 0 0 0 3px rgba(0, 99, 142, 0.25) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 8px 36px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.35) !important;
 }
 
 .search-input {
@@ -1443,6 +1452,28 @@ textarea {
 
 /* ── TOUCH DEVICE ADAPTATION: DISABLE HOVER TRANSLATIONS ────── */
 @media (hover: none) {
+  /* Disable all reveal / spread animations on touch devices so cards are
+     always visible without needing IntersectionObserver to fire */
+  .reveal-on-scroll {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    transition: none !important;
+  }
+
+  .students-section .section-container,
+  .section-container.section-spread,
+  .students-section .section-container .section-title-wrap,
+  .section-container.section-spread .section-title-wrap,
+  .students-section .section-container .students-grid,
+  .section-container.section-spread .students-grid,
+  .students-section .section-container .no-results-state,
+  .section-container.section-spread .no-results-state {
+    transform: none !important;
+    opacity: 1 !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
   .students-grid .student-card {
     --base-rot: 0deg !important;
     --spread-x: 0px !important;
@@ -1479,7 +1510,14 @@ textarea {
   }
 }
 
-/* ── MOBILE NAVIGATION DRAWER THEME OVERRIDES ────────────────── */
+/* ── PROFILE LOADER CRISP TEXT ────────────────────────────────── */
+.loader-title {
+  color: #f1f5f9 !important;
+  -webkit-text-fill-color: #f1f5f9 !important;
+  text-shadow: none !important;
+  filter: none !important;
+  -webkit-font-smoothing: antialiased !important;
+}
 .mobile-nav-drawer {
   background: radial-gradient(ellipse 90% 70% at 85% 0%, rgba(0, 195, 255, 0.12) 0%, transparent 65%),
               radial-gradient(ellipse 80% 60% at 15% 100%, rgba(0, 99, 142, 0.2) 0%, transparent 60%),
@@ -1532,3 +1570,28 @@ textarea {
   color: #ffffff !important;
   box-shadow: 0 0 14px rgba(0, 195, 255, 0.35) !important;
 }
+
+/* ── PROFILE MOBILE NAVBAR (Visible ONLY on Mobile <= 900px) ────── */
+.profile-mobile-navbar {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .profile-mobile-navbar {
+    display: block !important;
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 1000 !important;
+  }
+
+  .profile-mobile-navbar .mobile-nav-toggle {
+    display: flex !important;
+  }
+
+  .profile-page {
+    padding-top: 1rem;
+  }
+}
+
