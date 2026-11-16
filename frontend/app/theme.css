@@ -143,10 +143,21 @@ textarea {
 }
 
 .navbar.nav-scrolled {
-  background: rgba(10, 15, 20, 0.88) !important;
-  border-bottom: 1px solid var(--bg-card-border) !important;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(6, 11, 20, 0.94) !important;
+  border-bottom: 1px solid rgba(140, 185, 204, 0.22) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Opaque frosted glass effect for pages without a hero (Resumes & Profile Edit) */
+.dark-theme .navbar,
+.profile-mobile-navbar {
+  background: rgba(6, 11, 20, 0.95) !important;
+  border-bottom: 1px solid rgba(140, 185, 204, 0.22) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.55) !important;
 }
 
 .brand-link:hover .brand-title {
@@ -1577,6 +1588,19 @@ textarea {
 }
 
 @media (max-width: 900px) {
+  /* On mobile screens, give navbar a frosted glass background across all sections
+     so content never overlaps behind it when scrolling */
+  .navbar,
+  .navbar.nav-scrolled,
+  .profile-mobile-navbar,
+  .dark-theme .navbar {
+    background: rgba(6, 11, 20, 0.95) !important;
+    border-bottom: 1px solid rgba(140, 185, 204, 0.25) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6) !important;
+  }
+
   .profile-mobile-navbar {
     display: block !important;
     position: sticky !important;
@@ -1590,8 +1614,26 @@ textarea {
     display: flex !important;
   }
 
+  /* Remove back to student and logout button in profile edit card on mobile screen */
+  .profile-heading .profile-actions,
+  .profile-actions.desktop-only-actions {
+    display: none !important;
+  }
+
   .profile-page {
     padding-top: 1rem;
+  }
+}
+
+@media (max-width: 540px) {
+  .profile-mobile-navbar .brand-subtitle {
+    display: none !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .profile-mobile-navbar .brand-text {
+    display: none !important;
   }
 }
 
