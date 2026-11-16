@@ -77,16 +77,39 @@ export default function ResumesPage() {
     }
   }, [query, filterMode, studentsWithResume, allStudents]);
 
-  // Handle ESC key to close centered modal
+  // Handle ESC key to close centered modal or mobile menu
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setActiveResumeStudent(null);
+        setIsMobileMenuOpen(false);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isMobileMenuOpen]);
+
+  // Auto-close on resize to desktop (> 768px)
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768 && isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isMobileMenuOpen]);
 
   function openLogin() {
     window.dispatchEvent(new Event("batchfolio:open-login"));
@@ -344,6 +367,17 @@ export default function ResumesPage() {
                 <polyline points="9 22 9 12 15 12 15 22"></polyline>
               </svg>
               <span>Home</span>
+            </Link>
+            <Link
+              href="/#search-section"
+              className="mobile-nav-item"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </svg>
+              <span>Search Students</span>
             </Link>
             <Link
               href="/resumes"
