@@ -63,6 +63,7 @@ body,
   background-attachment: fixed;
   background-size: 100% 100%;
   min-height: 100vh;
+  overflow-x: hidden; /* global x-overflow prevention */
 }
 
 /* ── CLEANUP & OVERRIDES ─────────────────────────────────────── */
@@ -239,6 +240,7 @@ textarea {
   .hero-section {
     min-height: auto;
     padding: 2rem 1rem 2rem;
+    overflow: hidden; /* prevent aurora bands from causing x-overflow */
   }
 }
 
@@ -711,6 +713,16 @@ textarea {
   margin: 0;
 }
 
+/* Resume page: frosted glass sticky search bar */
+.resume-search-sticky {
+  background: rgba(6, 11, 20, 0.88) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(140, 185, 204, 0.18) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+  pointer-events: auto !important;
+}
+
 .search-wrapper {
   max-width: 860px;
   margin: 0 auto;
@@ -870,6 +882,7 @@ textarea {
   transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
+  overflow-x: clip; /* prevent glow pseudo from triggering x-scroll */
 }
 
 /* Atmospheric background glow spreading outward */
@@ -893,6 +906,9 @@ textarea {
     width 0.95s cubic-bezier(0.16, 1, 0.3, 1),
     height 0.95s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform, opacity;
+  /* prevent pseudo-element from causing x-overflow */
+  max-width: 100vw;
+  overflow: hidden;
 }
 
 /* Triggered State: Spread to full size and glow expansion */
@@ -1601,6 +1617,16 @@ textarea {
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6) !important;
   }
 
+  /* Fix sticky search bar: match mobile navbar height of 64px */
+  .search-section {
+    top: 64px !important;
+  }
+
+  /* Clip x-overflow on students section to prevent glow bleed */
+  .students-section {
+    overflow-x: hidden;
+  }
+
   .profile-mobile-navbar {
     display: block !important;
     position: sticky !important;
@@ -1623,6 +1649,15 @@ textarea {
   .profile-page {
     padding-top: 1rem;
   }
+
+  /* Resume search sticky: frosted glass background so content doesn't bleed through */
+  .resume-search-sticky {
+    background: rgba(6, 11, 20, 0.88) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-bottom: 1px solid rgba(140, 185, 204, 0.18) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+  }
 }
 
 @media (max-width: 540px) {
@@ -1631,9 +1666,170 @@ textarea {
   }
 }
 
+/* Show brand-text even at 380px - only hide subtitle, keep the title */
 @media (max-width: 380px) {
   .profile-mobile-navbar .brand-text {
+    display: flex !important;
+  }
+  .profile-mobile-navbar .brand-subtitle {
     display: none !important;
   }
+  .profile-mobile-navbar .brand-title {
+    font-size: 1rem !important;
+  }
 }
+
+/* ── RESUME FILTER CONTROLS & TABS MOBILE ALIGNMENT ─────────── */
+@media (max-width: 768px) {
+  .filter-controls-row {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.65rem !important;
+    width: 100% !important;
+    margin-top: 0.5rem !important;
+    text-align: center !important;
+  }
+
+  .filter-chips {
+    display: flex !important;
+    width: 100% !important;
+    max-width: 440px !important;
+    margin: 0 auto !important;
+    background: rgba(14, 22, 34, 0.92) !important;
+    border: 1px solid rgba(140, 185, 204, 0.28) !important;
+    border-radius: 999px !important;
+    padding: 3px !important;
+    gap: 3px !important;
+    box-sizing: border-box !important;
+  }
+
+  .filter-chip {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    text-align: center !important;
+    padding: 0.5rem 0.35rem !important;
+    font-size: 0.78rem !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 999px !important;
+  }
+
+  .students-counter {
+    text-align: center !important;
+    width: 100% !important;
+    font-size: 0.84rem !important;
+    color: var(--light-azure-muted) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.35rem !important;
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .filter-chip {
+    font-size: 0.72rem !important;
+    padding: 0.45rem 0.2rem !important;
+  }
+}
+
+/* ── RESUME MOBILE PDF PREVIEW & VIEWER STYLING ────────────── */
+.resume-vault-mobile-tile {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  padding: 1.5rem 1rem;
+  background: radial-gradient(ellipse 80% 60% at 50% 35%, rgba(0, 99, 142, 0.18) 0%, rgba(8, 14, 22, 0.92) 100%);
+  text-align: center;
+  user-select: none;
+}
+
+.mobile-pdf-icon-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--light-azure);
+}
+
+.mobile-pdf-icon-wrap svg {
+  stroke: #38bdf8;
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.35));
+}
+
+.mobile-pdf-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #38bdf8;
+  background: rgba(0, 99, 142, 0.28);
+  border: 1px solid rgba(140, 185, 204, 0.28);
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+}
+
+.mobile-pdf-hint-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mobile-pdf-tap-hint {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--paper-white);
+}
+
+.mobile-pdf-sub-hint {
+  font-size: 0.75rem;
+  color: var(--light-azure-muted);
+}
+
+.resume-modal-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  background: #080c14;
+  color: var(--light-azure);
+  font-size: 0.88rem;
+  z-index: 2;
+}
+
+.mobile-pdf-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 99, 142, 0.22);
+  border-bottom: 1px solid rgba(140, 185, 204, 0.2);
+  font-size: 0.76rem;
+  color: var(--light-azure);
+}
+
+.mobile-pdf-notice-link {
+  color: #38bdf8;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.mobile-pdf-notice-link:hover {
+  text-decoration: underline;
+  color: #ffffff;
+}
+
 

@@ -194,6 +194,18 @@ export default function ProfileEditor() {
     };
   }, []);
 
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
+
   // ── Skill Tag Management ───────────────────────────────────────────────────
   function addSkill(skillName: string) {
     const trimmed = skillName.trim();
@@ -555,19 +567,10 @@ export default function ProfileEditor() {
                 </div>
               </div>
               <div className="mobile-user-actions">
-                <Link
-                  href="/"
-                  className="btn btn-primary mobile-edit-profile-btn"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                    <path d="M19 12H5M12 19l-7-7 7-7" />
-                  </svg>
-                  <span>Back to Students</span>
-                </Link>
                 <button
                   type="button"
                   className="btn btn-outline mobile-logout-btn"
+                  style={{ gridColumn: "1 / -1" }}
                   onClick={() => {
                     setIsMobileMenuOpen(false);
                     logout();

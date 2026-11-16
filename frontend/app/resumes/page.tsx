@@ -25,6 +25,24 @@ export default function ResumesPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ name: string; usn: string; email?: string | null; avatar?: string | null } | null>(null);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const [modalIframeLoaded, setModalIframeLoaded] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileDevice(
+        window.innerWidth <= 768 ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      );
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    setModalIframeLoaded(false);
+  }, [activeResumeStudent]);
 
   useEffect(() => {
     ApiService.getStudents()
@@ -87,6 +105,18 @@ export default function ResumesPage() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
 
   function openLogin() {
     window.dispatchEvent(new Event("batchfolio:open-login"));
@@ -356,7 +386,7 @@ export default function ResumesPage() {
                 <line x1="16" y1="13" x2="8" y2="13"></line>
                 <line x1="16" y1="17" x2="8" y2="17"></line>
               </svg>
-              <span>Resume Portfolios</span>
+              <span>Resumes</span>
             </Link>
           </div>
         </div>
@@ -511,6 +541,7 @@ export default function ResumesPage() {
                 <ResumeCard
                   key={student.usn}
                   student={student}
+                  isMobile={isMobileDevice}
                   onOpen={() => setActiveResumeStudent(student)}
                   onDownload={handleDownload}
                 />
@@ -626,11 +657,46 @@ export default function ResumesPage() {
             {/* Modal Body: Centered Enlarged PDF Preview */}
             <div className="resume-modal-body">
               {activeResumeStudent.resumeUrl ? (
-                <iframe
-                  src={`${activeResumeStudent.resumeUrl}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`}
-                  title={`${activeResumeStudent.fullName} Verified Resume`}
-                  className="resume-modal-iframe"
-                />
+                (() => {
+                  const isLocal = Boolean(
+                    activeResumeStudent.resumeUrl.includes("localhost") ||
+                    activeResumeStudent.resumeUrl.includes("127.0.0.1")
+                  );
+                  const pdfSrc = isMobileDevice && !isLocal
+                    ? `https://docs.google.com/viewer?url=${encodeURIComponent(activeResumeStudent.resumeUrl)}&embedded=true`
+                    : `${activeResumeStudent.resumeUrl}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`;
+
+                  return (
+                    <>
+                      {!modalIframeLoaded && (
+                        <div className="resume-modal-loading">
+                          <div className="spinner-core" style={{ width: "26px", height: "26px" }} />
+                          <span>Loading document preview...</span>
+                        </div>
+                      )}
+                      {isMobileDevice && (
+                        <div className="mobile-pdf-notice">
+                          <span>Interactive mobile preview</span>
+                          <a
+                            href={activeResumeStudent.resumeUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mobile-pdf-notice-link"
+                          >
+                            Open Full PDF ↗
+                          </a>
+                        </div>
+                      )}
+                      <iframe
+                        key={pdfSrc}
+                        src={pdfSrc}
+                        title={`${activeResumeStudent.fullName} Verified Resume`}
+                        className="resume-modal-iframe"
+                        onLoad={() => setModalIframeLoaded(true)}
+                      />
+                    </>
+                  );
+                })()
               ) : (
                 <div className="resume-vault-pdf-fallback" style={{ height: "400px" }}>
                   <div className="fallback-folder-icon">
@@ -674,10 +740,12 @@ export default function ResumesPage() {
 /* ── Resume Card Component Styled Like a Folder Cover ── */
 function ResumeCard({
   student,
+  isMobile,
   onOpen,
   onDownload,
 }: {
   student: Student;
+  isMobile?: boolean;
   onOpen: () => void;
   onDownload: (s: Student) => void;
 }) {
@@ -732,20 +800,39 @@ function ResumeCard({
         </div>
 
         {student.resumeUrl ? (
-          <>
-            {!iframeLoaded && (
-              <div className="resume-vault-iframe-loading">
-                <div className="spinner-core" style={{ width: "22px", height: "22px" }} />
-                <span>Loading preview...</span>
+          isMobile ? (
+            <div className="resume-vault-mobile-tile">
+              <div className="mobile-pdf-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" width="38" height="38">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <line x1="10" y1="9" x2="8" y2="9" />
+                </svg>
+                <span className="mobile-pdf-badge">PDF DOCUMENT</span>
               </div>
-            )}
-            <iframe
-              src={`${student.resumeUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
-              title={`${student.fullName} Resume PDF`}
-              className="resume-vault-iframe resume-vault-iframe-preview"
-              onLoad={() => setIframeLoaded(true)}
-            />
-          </>
+              <div className="mobile-pdf-hint-wrap">
+                <span className="mobile-pdf-tap-hint">Tap to preview document</span>
+                <span className="mobile-pdf-sub-hint">Verified Class of 2024–2028</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              {!iframeLoaded && (
+                <div className="resume-vault-iframe-loading">
+                  <div className="spinner-core" style={{ width: "22px", height: "22px" }} />
+                  <span>Loading preview...</span>
+                </div>
+              )}
+              <iframe
+                src={`${student.resumeUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
+                title={`${student.fullName} Resume PDF`}
+                className="resume-vault-iframe resume-vault-iframe-preview"
+                onLoad={() => setIframeLoaded(true)}
+              />
+            </>
+          )
         ) : (
           <div className="resume-vault-pdf-fallback">
             <div className="fallback-folder-icon" style={{ width: "54px", height: "54px" }}>

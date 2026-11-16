@@ -106,6 +106,18 @@ export default function HomePage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
+
   // Intersection observer for reveal-on-scroll and section-spread
   useEffect(() => {
     const els = document.querySelectorAll(".reveal-on-scroll, .section-spread");
@@ -434,7 +446,7 @@ export default function HomePage() {
                 <line x1="16" y1="13" x2="8" y2="13"></line>
                 <line x1="16" y1="17" x2="8" y2="17"></line>
               </svg>
-              <span>Resume Portfolios</span>
+              <span>Resumes</span>
             </Link>
           </div>
         </div>
