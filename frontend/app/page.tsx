@@ -143,38 +143,34 @@ export default function HomePage() {
 
   function scrollToSearch(e?: React.MouseEvent) {
     if (e) e.preventDefault();
-    const searchSection = document.getElementById("search-section");
     const searchInput = document.getElementById("student-search-input") as HTMLInputElement | null;
-    if (!searchSection) return;
 
+    // Use students-grid-section as target so the full view (search bar + profiles heading + cards) is visible.
+    // getBoundingClientRect() is reliable even for sticky elements.
+    const studentsSection = document.getElementById("students-grid-section");
+    const searchSection = document.getElementById("search-section");
     const navbar = document.getElementById("main-nav");
+
     const navHeight = navbar ? navbar.offsetHeight : 74;
+    const searchHeight = searchSection ? searchSection.offsetHeight : 60;
 
-    let elementTop = 0;
-    const heroSection = document.getElementById("hero-section");
-    if (heroSection) {
-      let heroTop = 0;
-      let curr: HTMLElement | null = heroSection;
-      while (curr) {
-        heroTop += curr.offsetTop || 0;
-        curr = curr.offsetParent as HTMLElement | null;
-      }
-      elementTop = heroTop + heroSection.offsetHeight;
-    } else {
-      let curr: HTMLElement | null = searchSection;
-      while (curr) {
-        elementTop += curr.offsetTop || 0;
-        curr = curr.offsetParent as HTMLElement | null;
-      }
-    }
-
-    const targetY = Math.max(0, elementTop - navHeight);
-
-    if (Math.abs(window.scrollY - targetY) > 20) {
+    if (studentsSection) {
+      // Absolute doc position = current scrollY + rect.top (works from any scroll position)
+      const absSectionTop = window.scrollY + studentsSection.getBoundingClientRect().top;
+      // Scroll so navbar is at top, search bar fills the gap, then profiles section is first thing visible
+      const targetY = Math.max(0, absSectionTop - navHeight - searchHeight);
+      window.scrollTo({ top: targetY, behavior: "smooth" });
+    } else if (searchSection) {
+      // Fallback: scroll to search bar only
+      const absSearchTop = window.scrollY + searchSection.getBoundingClientRect().top;
+      const targetY = Math.max(0, absSearchTop - navHeight);
       window.scrollTo({ top: targetY, behavior: "smooth" });
     }
 
-    searchInput?.focus({ preventScroll: true });
+    // Focus search input after smooth scroll settles
+    setTimeout(() => {
+      searchInput?.focus({ preventScroll: true });
+    }, 400);
   }
 
   function openLogin() {

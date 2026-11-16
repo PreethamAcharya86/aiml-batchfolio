@@ -215,56 +215,70 @@ class BatchfolioApp {
       // Any printable ASCII character (from space ' ' to tilde '~')
       if (e.key.length === 1 && e.key >= ' ' && e.key <= '~') {
         e.preventDefault();
-        this.scrollToSearch();
+        const key = e.key;
+
+        // Use same getBoundingClientRect scroll logic as scrollToSearch(),
+        // but skip the internal focus timeout — we handle focus+insert here.
+        const studentsSection = document.getElementById('students-grid-section');
+        const searchSection = document.getElementById('search-section');
+        const navbar = document.getElementById('main-nav');
+        const navHeight = navbar ? navbar.offsetHeight : 74;
+        const searchHeight = searchSection ? searchSection.offsetHeight : 60;
+
+        if (studentsSection) {
+          const absSectionTop = window.scrollY + studentsSection.getBoundingClientRect().top;
+          const targetY = Math.max(0, absSectionTop - navHeight - searchHeight);
+          window.scrollTo({ top: targetY, behavior: 'smooth' });
+        } else if (searchSection) {
+          const absSearchTop = window.scrollY + searchSection.getBoundingClientRect().top;
+          window.scrollTo({ top: Math.max(0, absSearchTop - navHeight), behavior: 'smooth' });
+        }
+
+        // After scroll settles: focus input and insert the pressed key
         if (this.searchInput) {
-          this.searchInput.focus({ preventScroll: true });
-          this.searchInput.value += e.key;
-          // Trigger input event to run filtering immediately
-          this.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+          setTimeout(() => {
+            if (this.searchInput) {
+              this.searchInput.focus({ preventScroll: true });
+              this.searchInput.value += key;
+              this.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }, 400);
         }
       }
     });
   }
 
   /**
-   * Smoothly scroll so search bar sits flush right below the sticky navbar
+   * Smoothly scroll so the search bar + "Class of 2024–2028 Profiles" section
+   * are both visible below the sticky navbar — works from ANY scroll position,
+   * including when already deep in the student cards section.
+   *
+   * Uses getBoundingClientRect() so it works correctly even for position:sticky elements.
    */
   scrollToSearch() {
+    const studentsSection = document.getElementById('students-grid-section');
     const searchSection = document.getElementById('search-section');
-    if (!searchSection) return;
-
     const navbar = document.getElementById('main-nav');
+
     const navHeight = navbar ? navbar.offsetHeight : 74;
+    const searchHeight = searchSection ? searchSection.offsetHeight : 60;
 
-    // Calculate document-absolute top of search section (its natural un-stuck position)
-    let elementTop = 0;
-    const heroSection = document.getElementById('hero-section');
-    if (heroSection) {
-      let heroTop = 0;
-      let curr = heroSection;
-      while (curr) {
-        heroTop += curr.offsetTop || 0;
-        curr = curr.offsetParent;
-      }
-      elementTop = heroTop + heroSection.offsetHeight;
-    } else {
-      let curr = searchSection;
-      while (curr) {
-        elementTop += curr.offsetTop || 0;
-        curr = curr.offsetParent;
-      }
-    }
-
-    // Target scroll so the search section sits clearly beneath navbar
-    const targetY = Math.max(0, elementTop - navHeight);
-
-    // Only scroll if we aren't already positioned at the search bar section
-    if (Math.abs(window.scrollY - targetY) > 20) {
+    if (studentsSection) {
+      // getBoundingClientRect().top is viewport-relative; add scrollY for doc-absolute position
+      const absSectionTop = window.scrollY + studentsSection.getBoundingClientRect().top;
+      // Target: navbar at top → search bar gap → profiles section starts
+      const targetY = Math.max(0, absSectionTop - navHeight - searchHeight);
       window.scrollTo({ top: targetY, behavior: 'smooth' });
+    } else if (searchSection) {
+      const absSearchTop = window.scrollY + searchSection.getBoundingClientRect().top;
+      window.scrollTo({ top: Math.max(0, absSearchTop - navHeight), behavior: 'smooth' });
     }
 
+    // Focus search input after scroll settles (used by navbar-click path)
     if (this.searchInput) {
-      this.searchInput.focus({ preventScroll: true });
+      setTimeout(() => {
+        this.searchInput.focus({ preventScroll: true });
+      }, 400);
     }
   }
 
