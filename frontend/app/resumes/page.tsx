@@ -451,30 +451,6 @@ export default function ResumesPage() {
                 )}
               </div>
             </div>
-
-            {/* Filter Tabs & Counter placed below search bar */}
-            <div className="filter-controls-row" style={{ width: "100%", marginTop: "0.4rem" }}>
-              <div className="filter-chips">
-                <button
-                  type="button"
-                  className={`filter-chip ${filterMode === "with-resume" ? "active" : ""}`}
-                  onClick={() => setFilterMode("with-resume")}
-                >
-                  Resumes Available ({studentsWithResume.length})
-                </button>
-                <button
-                  type="button"
-                  className={`filter-chip ${filterMode === "all" ? "active" : ""}`}
-                  onClick={() => setFilterMode("all")}
-                >
-                  All Batch Students ({allStudents.length})
-                </button>
-              </div>
-
-              <div className="students-counter">
-                Showing <strong>{filtered.length}</strong> {filterMode === "with-resume" ? "Verified Resumes" : "Students"}
-              </div>
-            </div>
           </div>
         </section>
 

@@ -63,7 +63,6 @@ body,
   background-attachment: fixed;
   background-size: 100% 100%;
   min-height: 100vh;
-  overflow-x: hidden; /* global x-overflow prevention */
 }
 
 /* ── CLEANUP & OVERRIDES ─────────────────────────────────────── */
@@ -138,9 +137,24 @@ textarea {
 
 /* ── NAVBAR ──────────────────────────────────────────────────── */
 .navbar {
+  position: sticky !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: var(--navbar-height, 74px);
+  z-index: 1000 !important;
   background: transparent;
   border-bottom: 1px solid transparent;
   transition: background-color 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
+  box-sizing: border-box;
+}
+
+.nav-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
 }
 
 .navbar.nav-scrolled {
@@ -1365,35 +1379,166 @@ textarea {
   font-variant-numeric: tabular-nums;
 }
 
-/* ── FOOTER ──────────────────────────────────────────────────── */
+/* ── FOOTER RESPONSIVE STYLING ──────────────────────────────── */
 .page-footer {
-  background: rgba(8, 12, 16, 0.65) !important;
+  background: rgba(8, 12, 16, 0.88) !important;
   border-top: 1px solid var(--bg-card-border) !important;
-  padding: 3.5rem 0 2rem;
+  padding: 3.5rem 1.5rem 2rem !important;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-container {
+  max-width: 1240px;
+  margin: 0 auto 2.5rem;
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1fr;
+  gap: 2.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-width: 460px;
+}
+
+.footer-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.footer-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid rgba(140, 185, 204, 0.25);
 }
 
 .footer-title {
   color: var(--paper-white) !important;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
-.footer-desc,
-.footer-links-group p,
-.footer-links-group li a {
+.footer-desc {
   color: var(--light-azure-muted) !important;
+  font-size: 0.88rem;
+  line-height: 1.6;
 }
 
 .footer-links-group h4 {
   color: var(--paper-white) !important;
   font-family: var(--font-heading);
+  font-size: 0.98rem;
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+  letter-spacing: -0.01em;
 }
 
-.footer-links-group li a:hover {
-  color: var(--light-azure) !important;
+.footer-links-group p {
+  color: var(--light-azure-muted) !important;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+  line-height: 1.5;
+}
+
+.footer-links-group strong {
+  color: #e2e8f0;
+}
+
+.footer-links-group ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.footer-links-group a {
+  color: var(--light-azure-muted) !important;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.2s ease;
+  display: inline-block;
+  padding: 0.2rem 0;
+}
+
+.footer-links-group a:hover {
+  color: #38bdf8 !important;
 }
 
 .footer-bottom {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(140, 185, 204, 0.12);
+  text-align: center;
+  font-size: 0.82rem;
   color: var(--light-azure-muted) !important;
-  opacity: 0.6;
+  opacity: 0.75;
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .footer-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-footer {
+    padding: 2.25rem 1.15rem 1.5rem !important;
+  }
+
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .footer-brand {
+    gap: 0.65rem;
+  }
+
+  .footer-title {
+    font-size: 1.15rem;
+  }
+
+  .footer-desc {
+    font-size: 0.84rem;
+    line-height: 1.55;
+  }
+
+  .footer-links-group h4 {
+    font-size: 0.92rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .footer-links-group p,
+  .footer-links-group a {
+    font-size: 0.82rem;
+  }
+
+  .footer-bottom {
+    padding-top: 1.15rem;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
 }
 
 /* ── PREFERS REDUCED MOTION ──────────────────────────────────── */
@@ -1604,27 +1749,57 @@ textarea {
 }
 
 @media (max-width: 900px) {
+  :root {
+    --navbar-height: 64px;
+  }
+
   /* On mobile screens, give navbar a frosted glass background across all sections
      so content never overlaps behind it when scrolling */
   .navbar,
   .navbar.nav-scrolled,
   .profile-mobile-navbar,
   .dark-theme .navbar {
+    position: sticky !important;
+    top: 0 !important;
+    height: 64px !important;
+    z-index: 1000 !important;
     background: rgba(6, 11, 20, 0.95) !important;
     border-bottom: 1px solid rgba(140, 185, 204, 0.25) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6) !important;
+    box-sizing: border-box !important;
   }
 
-  /* Fix sticky search bar: match mobile navbar height of 64px */
+  .nav-container {
+    height: 100% !important;
+    padding: 0 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+  }
+
+  .brand-logo-wrap {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .brand-title {
+    font-size: 1.15rem !important;
+  }
+
+  .brand-subtitle {
+    font-size: 0.68rem !important;
+  }
+
+  /* Sticky search bar on mobile: positioned flush at 64px below navbar with ZERO overlap */
   .search-section {
+    position: sticky !important;
     top: 64px !important;
-  }
-
-  /* Clip x-overflow on students section to prevent glow bleed */
-  .students-section {
-    overflow-x: hidden;
+    z-index: 90 !important;
+    padding: 0.45rem 1rem !important;
+    box-sizing: border-box !important;
   }
 
   .profile-mobile-navbar {
@@ -1650,13 +1825,18 @@ textarea {
     padding-top: 1rem;
   }
 
-  /* Resume search sticky: frosted glass background so content doesn't bleed through */
+  /* Resume search sticky: frosted glass background flush below 64px navbar */
   .resume-search-sticky {
-    background: rgba(6, 11, 20, 0.88) !important;
+    position: sticky !important;
+    top: 64px !important;
+    z-index: 90 !important;
+    padding: 0.45rem 1rem !important;
+    background: rgba(6, 11, 20, 0.94) !important;
     backdrop-filter: blur(16px) !important;
     -webkit-backdrop-filter: blur(16px) !important;
-    border-bottom: 1px solid rgba(140, 185, 204, 0.18) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+    border-bottom: 1px solid rgba(140, 185, 204, 0.2) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+    box-sizing: border-box !important;
   }
 }
 
@@ -1679,62 +1859,27 @@ textarea {
   }
 }
 
-/* ── RESUME FILTER CONTROLS & TABS MOBILE ALIGNMENT ─────────── */
+/* ── COMPACT RESPONSIVE SEARCH ON MOBILE ────────────────────── */
 @media (max-width: 768px) {
-  .filter-controls-row {
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 0.65rem !important;
-    width: 100% !important;
-    margin-top: 0.5rem !important;
-    text-align: center !important;
+  .search-wrapper {
+    gap: 0 !important;
   }
 
-  .filter-chips {
-    display: flex !important;
-    width: 100% !important;
-    max-width: 440px !important;
-    margin: 0 auto !important;
-    background: rgba(14, 22, 34, 0.92) !important;
-    border: 1px solid rgba(140, 185, 204, 0.28) !important;
-    border-radius: 999px !important;
-    padding: 3px !important;
-    gap: 3px !important;
-    box-sizing: border-box !important;
+  .search-input-container {
+    min-height: 40px !important;
+    padding: 0.25rem 0.75rem !important;
   }
 
-  .filter-chip {
-    flex: 1 1 0% !important;
-    min-width: 0 !important;
-    text-align: center !important;
-    padding: 0.5rem 0.35rem !important;
-    font-size: 0.78rem !important;
-    line-height: 1.25 !important;
-    white-space: nowrap !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 999px !important;
+  .search-input {
+    font-size: 0.88rem !important;
+    height: 32px !important;
   }
 
-  .students-counter {
-    text-align: center !important;
-    width: 100% !important;
-    font-size: 0.84rem !important;
-    color: var(--light-azure-muted) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 0.35rem !important;
-    margin: 0 !important;
-  }
-}
-
-@media (max-width: 380px) {
-  .filter-chip {
-    font-size: 0.72rem !important;
-    padding: 0.45rem 0.2rem !important;
+  /* Completely remove the noisy counter and filter row across mobile */
+  .filter-controls-row,
+  .students-counter,
+  .desktop-only-counter {
+    display: none !important;
   }
 }
 
