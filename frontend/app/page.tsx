@@ -141,36 +141,47 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, []);
 
-  function scrollToSearch(e?: React.MouseEvent) {
+  /**
+   * Scroll so the sticky search bar + "Class of 2024–2028 Profiles" section
+   * are both visible beneath the navbar. Works from ANY scroll position on
+   * both desktop and mobile.
+   */
+  function scrollToSearch(e?: React.MouseEvent, fromMobile = false) {
     if (e) e.preventDefault();
-    const searchInput = document.getElementById("student-search-input") as HTMLInputElement | null;
 
-    // Use students-grid-section as target so the full view (search bar + profiles heading + cards) is visible.
-    // getBoundingClientRect() is reliable even for sticky elements.
-    const studentsSection = document.getElementById("students-grid-section");
-    const searchSection = document.getElementById("search-section");
-    const navbar = document.getElementById("main-nav");
+    const doScroll = () => {
+      const studentsSection = document.getElementById("students-grid-section");
+      const searchSection = document.getElementById("search-section");
+      const navbar = document.getElementById("main-nav");
+      const searchInput = document.getElementById("student-search-input") as HTMLInputElement | null;
 
-    const navHeight = navbar ? navbar.offsetHeight : 74;
-    const searchHeight = searchSection ? searchSection.offsetHeight : 60;
+      const navHeight = navbar ? navbar.offsetHeight : 64;
+      const searchHeight = searchSection ? searchSection.getBoundingClientRect().height : 56;
 
-    if (studentsSection) {
-      // Absolute doc position = current scrollY + rect.top (works from any scroll position)
-      const absSectionTop = window.scrollY + studentsSection.getBoundingClientRect().top;
-      // Scroll so navbar is at top, search bar fills the gap, then profiles section is first thing visible
-      const targetY = Math.max(0, absSectionTop - navHeight - searchHeight);
-      window.scrollTo({ top: targetY, behavior: "smooth" });
-    } else if (searchSection) {
-      // Fallback: scroll to search bar only
-      const absSearchTop = window.scrollY + searchSection.getBoundingClientRect().top;
-      const targetY = Math.max(0, absSearchTop - navHeight);
-      window.scrollTo({ top: targetY, behavior: "smooth" });
+      if (studentsSection) {
+        // getBoundingClientRect gives viewport-relative top; + scrollY = absolute doc position
+        const absSectionTop = window.scrollY + studentsSection.getBoundingClientRect().top;
+        // Target: navbar at top → search bar gap → profiles section starts
+        const targetY = Math.max(0, absSectionTop - navHeight - searchHeight);
+        window.scrollTo({ top: targetY, behavior: "smooth" });
+      } else if (searchSection) {
+        const absSearchTop = window.scrollY + searchSection.getBoundingClientRect().top;
+        window.scrollTo({ top: Math.max(0, absSearchTop - navHeight), behavior: "smooth" });
+      }
+
+      // Focus input after smooth scroll settles (~350ms)
+      setTimeout(() => {
+        searchInput?.focus({ preventScroll: true });
+      }, 350);
+    };
+
+    if (fromMobile) {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+      setTimeout(doScroll, 80);
+    } else {
+      doScroll();
     }
-
-    // Focus search input after smooth scroll settles
-    setTimeout(() => {
-      searchInput?.focus({ preventScroll: true });
-    }, 400);
   }
 
   function openLogin() {
@@ -272,40 +283,63 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Mobile Screen Navbar Toggle Button */}
-          <button
-            type="button"
-            className={`mobile-nav-toggle ${isMobileMenuOpen ? "active" : ""}`}
-            id="mobile-nav-toggle"
-            aria-label="Toggle navigation menu"
-            aria-expanded={isMobileMenuOpen}
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {currentUser && (
-              <span className="mobile-toggle-user-badge">
-                <img
-                  src={currentUser.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=00638E&color=FFFFFF&size=200`}
-                  alt={currentUser.name}
-                  className="mobile-toggle-avatar"
-                />
-                <span className="mobile-toggle-mini-dot"></span>
-              </span>
-            )}
-            <span className="mobile-toggle-icon">
-              {isMobileMenuOpen ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="22" height="22">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="22" height="22">
-                  <line x1="3" y1="6" x2="21" y2="6"></line>
-                  <line x1="3" y1="12" x2="21" y2="12"></line>
-                  <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
+          {/* Mobile Screen Navbar Controls */}
+          <div className="mobile-nav-actions">
+            <button
+              type="button"
+              className="mobile-nav-search-btn"
+              id="mobile-nav-search-btn"
+              aria-label="Search Students"
+              title="Search Students"
+              onClick={(e) => {
+                if (isMobileMenuOpen) {
+                  document.body.style.overflow = "";
+                  document.documentElement.style.overflow = "";
+                  setIsMobileMenuOpen(false);
+                }
+                scrollToSearch(e, false);
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="20" height="20">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.3-4.3"></path>
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              className={`mobile-nav-toggle ${isMobileMenuOpen ? "active" : ""}`}
+              id="mobile-nav-toggle"
+              aria-label="Toggle navigation menu"
+              aria-expanded={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {currentUser && (
+                <span className="mobile-toggle-user-badge">
+                  <img
+                    src={currentUser.avatar ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=00638E&color=FFFFFF&size=200`}
+                    alt={currentUser.name}
+                    className="mobile-toggle-avatar"
+                  />
+                  <span className="mobile-toggle-mini-dot"></span>
+                </span>
               )}
-            </span>
-          </button>
+              <span className="mobile-toggle-icon">
+                {isMobileMenuOpen ? (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="22" height="22">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" width="22" height="22">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                  </svg>
+                )}
+              </span>
+            </button>
+          </div>
         </div>
 
         {/* Mobile Dropdown Drawer */}
@@ -420,9 +454,13 @@ export default function HomePage() {
             <a
               href="#search-section"
               className="mobile-nav-item"
+              id="mobile-drawer-search-btn"
               onClick={(e) => {
+                e.preventDefault();
+                document.body.style.overflow = "";
+                document.documentElement.style.overflow = "";
                 setIsMobileMenuOpen(false);
-                scrollToSearch(e);
+                scrollToSearch(undefined, true);
               }}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">

@@ -119,6 +119,22 @@ class BatchfolioApp {
       this.applyFilter();
     });
 
+    // When focusing search input while scrolled deep in student cards, align smoothly to profiles
+    this.searchInput.addEventListener('focus', () => {
+      const studentsSection = document.getElementById('students-grid-section');
+      const searchSection = document.getElementById('search-section');
+      const navbar = document.getElementById('main-nav');
+      const navHeight = navbar ? navbar.offsetHeight : 64;
+      const searchHeight = searchSection ? searchSection.getBoundingClientRect().height : 56;
+      if (studentsSection) {
+        const absSectionTop = window.scrollY + studentsSection.getBoundingClientRect().top;
+        const targetY = Math.max(0, absSectionTop - navHeight - searchHeight);
+        if (window.scrollY > targetY + 120) {
+          window.scrollTo({ top: targetY, behavior: 'smooth' });
+        }
+      }
+    });
+
     // Clear search
     this.searchClearBtn.addEventListener('click', () => {
       this.searchInput.value = '';
@@ -152,6 +168,26 @@ class BatchfolioApp {
     if (this.navSearchBtn) {
       this.navSearchBtn.addEventListener('click', (e) => {
         e.preventDefault();
+        this.scrollToSearch();
+      });
+    }
+
+    // Mobile Navbar Search button click
+    const mobileNavSearchBtn = document.getElementById('mobile-nav-search-btn');
+    if (mobileNavSearchBtn) {
+      mobileNavSearchBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.scrollToSearch();
+      });
+    }
+
+    // Mobile Drawer Search link click
+    const mobileDrawerSearchBtn = document.getElementById('mobile-drawer-search-btn');
+    if (mobileDrawerSearchBtn) {
+      mobileDrawerSearchBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
         this.scrollToSearch();
       });
     }
@@ -253,15 +289,17 @@ class BatchfolioApp {
    * are both visible below the sticky navbar — works from ANY scroll position,
    * including when already deep in the student cards section.
    *
-   * Uses getBoundingClientRect() so it works correctly even for position:sticky elements.
+   * Uses getBoundingClientRect() which is reliable even for position:sticky elements,
+   * and works correctly on both desktop and mobile.
    */
   scrollToSearch() {
     const studentsSection = document.getElementById('students-grid-section');
     const searchSection = document.getElementById('search-section');
     const navbar = document.getElementById('main-nav');
 
-    const navHeight = navbar ? navbar.offsetHeight : 74;
-    const searchHeight = searchSection ? searchSection.offsetHeight : 60;
+    const navHeight = navbar ? navbar.offsetHeight : 64;
+    // Use getBoundingClientRect().height for search bar — works on mobile too
+    const searchHeight = searchSection ? searchSection.getBoundingClientRect().height : 56;
 
     if (studentsSection) {
       // getBoundingClientRect().top is viewport-relative; add scrollY for doc-absolute position
@@ -274,11 +312,11 @@ class BatchfolioApp {
       window.scrollTo({ top: Math.max(0, absSearchTop - navHeight), behavior: 'smooth' });
     }
 
-    // Focus search input after scroll settles (used by navbar-click path)
+    // Focus search input after scroll settles
     if (this.searchInput) {
       setTimeout(() => {
         this.searchInput.focus({ preventScroll: true });
-      }, 400);
+      }, 420);
     }
   }
 
@@ -332,9 +370,26 @@ class BatchfolioApp {
     if (this.filteredStudents.length === 0) {
       this.studentsGrid.innerHTML = '';
       this.noResultsEl.style.display = 'block';
+      this.noResultsEl.classList.add('active');
+
+      // Scroll so that the search bar and the "No students found" message are clearly in view,
+      // preventing the viewport from collapsing and showing the footer
+      const studentsSection = document.getElementById('students-grid-section');
+      const searchSection = document.getElementById('search-section');
+      const navbar = document.getElementById('main-nav');
+      const navHeight = navbar ? navbar.offsetHeight : 64;
+      const searchHeight = searchSection ? searchSection.getBoundingClientRect().height : 56;
+      if (studentsSection) {
+        const absSectionTop = window.scrollY + studentsSection.getBoundingClientRect().top;
+        const targetY = Math.max(0, absSectionTop - navHeight - searchHeight);
+        if (window.scrollY > targetY) {
+          window.scrollTo({ top: targetY, behavior: 'smooth' });
+        }
+      }
       return;
     }
 
+    this.noResultsEl.classList.remove('active');
     this.noResultsEl.style.display = 'none';
 
     this.studentsGrid.innerHTML = this.filteredStudents.map(student => `

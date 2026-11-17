@@ -1881,6 +1881,71 @@ textarea {
   .desktop-only-counter {
     display: none !important;
   }
+
+  /* ── NO RESULTS STATE: ensure it fills the section so footer stays below ── */
+  .no-results-state {
+    min-height: 48vh;
+    padding: 3rem 1.5rem !important;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .no-results-state[style*="display: none"] {
+    display: none !important;
+  }
+
+  .no-results-state[style*="display: block"],
+  .no-results-state.active {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Ensure students section itself takes enough space when no results */
+  #students-grid-section {
+    min-height: 55vh !important;
+  }
+}
+
+/* ── MOBILE NAVBAR SEARCH BUTTON & CONTROLS ─────────────────── */
+.mobile-nav-actions {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-nav-actions {
+    display: flex !important;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .mobile-nav-search-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: rgba(14, 22, 34, 0.7) !important;
+    border: 1px solid rgba(140, 185, 204, 0.25) !important;
+    color: var(--light-azure) !important;
+    width: 38px;
+    height: 38px;
+    border-radius: 50% !important;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    flex-shrink: 0;
+    padding: 0;
+  }
+
+  .mobile-nav-search-btn:hover,
+  .mobile-nav-search-btn:active {
+    background: rgba(0, 99, 142, 0.28) !important;
+    border-color: #00c3ff !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 14px rgba(0, 195, 255, 0.35) !important;
+  }
 }
 
 /* ── RESUME MOBILE PDF PREVIEW & VIEWER STYLING ────────────── */
