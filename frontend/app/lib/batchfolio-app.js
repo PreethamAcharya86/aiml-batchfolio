@@ -95,13 +95,29 @@ class BatchfolioApp {
     } catch (err) {
       console.error('Failed to load students:', err);
       this.studentsGrid.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
-          <div style="font-size: 2.5rem; margin-bottom: 1rem;">⚡</div>
-          <h3 style="font-size: 1.5rem; color: #f1f5f9; margin-bottom: 0.5rem;">Could not load students</h3>
-          <p style="color: #94a3b8; font-size: 0.95rem; max-width: 480px; margin: 0 auto 1.5rem;">
-            Unable to reach the API server. Please check your connection or try again.
-          </p>
-          <button class="btn btn-outline" onclick="window.batchfolioApp.loadData(true)">&#8635; Retry</button>
+        <div class="students-error-state" style="grid-column: 1 / -1;">
+          <div class="students-error-card">
+            <div class="students-error-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="30" height="30">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            </div>
+            <div class="students-error-badge">Connection Alert</div>
+            <h3 class="students-error-title">Unable to Load Profiles</h3>
+            <p class="students-error-desc">
+              We encountered a temporary connection issue while retrieving student records from the database. Please check your network or try again.
+            </p>
+            <div class="students-error-actions">
+              <button class="btn btn-primary" onclick="window.batchfolioApp.loadData(true)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="margin-right: 6px;">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.19"/>
+                </svg>
+                <span>Retry Connection</span>
+              </button>
+            </div>
+          </div>
         </div>
       `;
       this.showToast('Could not load student data', 'error');

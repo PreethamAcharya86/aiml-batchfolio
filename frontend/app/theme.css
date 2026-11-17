@@ -2103,5 +2103,386 @@ textarea {
   font-weight: 500;
 }
 
+/* ── THEME-BASED ERROR & EMPTY STATES IN STUDENTS SECTION ──────── */
+.students-error-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 1rem;
+  width: 100%;
+}
+
+.students-error-card {
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  background: radial-gradient(ellipse 85% 65% at 50% 15%, rgba(0, 99, 142, 0.18) 0%, rgba(10, 16, 26, 0.94) 100%) !important;
+  border: 1px solid rgba(140, 185, 204, 0.28) !important;
+  border-radius: 20px;
+  padding: 2.75rem 2rem;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.65), 0 0 25px rgba(0, 99, 142, 0.16);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.students-error-icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+}
+
+.students-error-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.22rem 0.75rem;
+  border-radius: 999px;
+  margin-bottom: 0.85rem;
+}
+
+.students-error-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.6rem 0;
+  letter-spacing: -0.02em;
+}
+
+.students-error-desc {
+  color: var(--light-azure-muted, #8cb9cc);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 0 0 1.6rem 0;
+  max-width: 440px;
+}
+
+.students-error-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+/* ── REFINED NO-RESULTS EMPTY STATE ─────────────────────────── */
+.no-results-card {
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+  background: radial-gradient(ellipse 85% 65% at 50% 15%, rgba(0, 99, 142, 0.14) 0%, rgba(10, 16, 26, 0.9) 100%) !important;
+  border: 1px solid rgba(140, 185, 204, 0.22) !important;
+  border-radius: 20px;
+  padding: 2.75rem 2rem;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6), 0 0 25px rgba(0, 99, 142, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.no-results-icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(0, 99, 142, 0.22);
+  border: 1px solid rgba(140, 185, 204, 0.35);
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  box-shadow: 0 0 20px rgba(0, 99, 142, 0.25);
+}
+
+.no-results-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #38bdf8;
+  background: rgba(0, 99, 142, 0.22);
+  border: 1px solid rgba(140, 185, 204, 0.28);
+  padding: 0.22rem 0.75rem;
+  border-radius: 999px;
+  margin-bottom: 0.85rem;
+}
+
+.no-results-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.6rem 0;
+  letter-spacing: -0.02em;
+}
+
+.no-results-desc {
+  color: var(--light-azure-muted, #8cb9cc);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 0 0 1.6rem 0;
+  max-width: 440px;
+}
+
+.no-results-desc code {
+  color: #38bdf8;
+  background: rgba(0, 99, 142, 0.28);
+  border: 1px solid rgba(140, 185, 204, 0.25);
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.86rem;
+}
+
+/* ── SLEEK, RESPONSIVE LOGIN & OTP ERROR ALERT ───────────────── */
+.login-error {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 0.65rem !important;
+  padding: 0.75rem 0.95rem !important;
+  background: rgba(239, 68, 68, 0.12) !important;
+  border: 1px solid rgba(239, 68, 68, 0.35) !important;
+  border-radius: 12px !important;
+  color: #fca5a5 !important;
+  font-size: 0.84rem !important;
+  line-height: 1.45 !important;
+  margin: 0.85rem 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  text-align: left !important;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15) !important;
+  animation: modal-error-shake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.login-error-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: #f87171;
+  margin-top: 2px;
+}
+
+.login-error-text {
+  flex: 1;
+  min-width: 0;
+}
+
+@keyframes modal-error-shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+  40%, 60% { transform: translate3d(3px, 0, 0); }
+}
+
+/* ── PROFILE EDIT SECTION MOBILE RESPONSIVENESS ──────────────── */
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 1rem 0.75rem 3.5rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  .profile-panel {
+    padding: 1.5rem 1.15rem !important;
+    border-radius: 18px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45) !important;
+  }
+
+  .profile-heading {
+    margin-bottom: 1.25rem !important;
+  }
+
+  .profile-eyebrow {
+    font-size: 0.72rem !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  .profile-title {
+    font-size: 1.55rem !important;
+    margin: 0.2rem 0 0.4rem 0 !important;
+  }
+
+  .profile-message {
+    font-size: 0.85rem !important;
+  }
+
+  .profile-avatar-center-section {
+    margin: 0.75rem 0 1.5rem !important;
+  }
+
+  .profile-avatar-edit-btn {
+    width: 110px !important;
+    height: 110px !important;
+  }
+
+  .profile-avatar-circle-img,
+  .profile-avatar-circle-default {
+    width: 110px !important;
+    height: 110px !important;
+  }
+
+  .profile-avatar-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .avatar-action-btn {
+    font-size: 0.78rem !important;
+    padding: 0.45rem 0.85rem !important;
+  }
+
+  .profile-form {
+    margin-top: 1rem !important;
+  }
+
+  .profile-form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .profile-input,
+  .profile-textarea {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    font-size: 0.88rem !important;
+    padding: 0.65rem 0.85rem !important;
+  }
+
+  .form-group label {
+    font-size: 0.82rem !important;
+    margin-bottom: 0.35rem !important;
+  }
+
+  .profile-hint {
+    font-size: 0.75rem !important;
+  }
+
+  /* Skills tag pills on mobile */
+  .skills-tags-container {
+    gap: 0.35rem !important;
+    margin-bottom: 0.6rem !important;
+  }
+
+  .skill-pill-box {
+    font-size: 0.78rem !important;
+    padding: 0.3rem 0.65rem !important;
+    max-width: 100% !important;
+    word-break: break-word !important;
+  }
+
+  .skills-dropdown-popup {
+    max-height: 200px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Resume upload card on mobile */
+  .resume-dropzone {
+    padding: 1.25rem 0.85rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .resume-icon-circle {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .resume-current-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+    padding: 0.85rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .resume-current-info {
+    width: 100% !important;
+  }
+
+  .resume-current-actions {
+    display: flex !important;
+    width: 100% !important;
+    gap: 0.5rem !important;
+  }
+
+  .resume-current-actions .avatar-action-btn {
+    flex: 1 !important;
+    justify-content: center !important;
+  }
+
+  /* Crop modal on mobile */
+  .crop-modal-dialog {
+    max-width: min(92vw, 360px) !important;
+    padding: 1.25rem 1rem !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+  }
+
+  .crop-canvas {
+    max-width: 100% !important;
+    width: min(280px, 80vw) !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  /* Modals on mobile */
+  .modal-dialog.modal-auth {
+    padding: 1.6rem 1.15rem !important;
+    width: calc(100% - 1.25rem) !important;
+    max-width: calc(100vw - 1.25rem) !important;
+    margin: 0 auto !important;
+    border-radius: 18px !important;
+    box-sizing: border-box !important;
+  }
+
+  #otp-input,
+  #inline-otp-input {
+    font-size: clamp(1.25rem, 5.5vw, 1.8rem) !important;
+    letter-spacing: clamp(0.2em, 2.5vw, 0.45em) !important;
+    padding: 0.65rem 0.35rem !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-panel {
+    padding: 1.25rem 0.85rem !important;
+  }
+
+  .students-error-card,
+  .no-results-card {
+    padding: 2rem 1.15rem !important;
+  }
+
+  .students-error-title,
+  .no-results-title {
+    font-size: 1.18rem !important;
+  }
+
+  .students-error-desc,
+  .no-results-desc {
+    font-size: 0.85rem !important;
+  }
+}
+
 
 

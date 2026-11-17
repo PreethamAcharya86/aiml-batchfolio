@@ -183,9 +183,14 @@ export default function OtpVerificationModal({
           </div>
 
           {error && (
-            <p className="login-error" role="alert" style={{ marginTop: "0.5rem", marginBottom: "0.75rem" }}>
-              {error}
-            </p>
+            <div className="login-error" role="alert">
+              <svg className="login-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span className="login-error-text">{error}</span>
+            </div>
           )}
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "1.25rem" }}>

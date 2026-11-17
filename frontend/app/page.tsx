@@ -646,16 +646,27 @@ export default function HomePage() {
             </div>
             <div className="students-grid" id="students-grid"></div>
             <div className="no-results-state" id="no-results" style={{ display: "none" }}>
-              <div className="no-results-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" width="48" height="48" style={{ opacity: 0.5 }}>
-                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-                </svg>
+              <div className="no-results-card">
+                <div className="no-results-icon-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="32" height="32">
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                </div>
+                <div className="no-results-badge">Directory Search</div>
+                <h3 className="no-results-title">No Matching Students Found</h3>
+                <p className="no-results-desc">
+                  We couldn&apos;t find any student profile matching your query. Try searching by USN (e.g. <code>4MT24AI001</code>), full name, or clear your search term.
+                </p>
+                <div className="no-results-actions">
+                  <button className="btn btn-outline" id="reset-search-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15" style={{ marginRight: "6px" }}>
+                      <path d="M18 6 6 18M6 6l12 12" />
+                    </svg>
+                    <span>Clear Search Query</span>
+                  </button>
+                </div>
               </div>
-              <h3>No students found</h3>
-              <p>
-                We couldn&apos;t find any student matching your query. Try searching by USN (e.g. <code>4MT24AI001</code>), name, or clear filters.
-              </p>
-              <button className="btn btn-outline" id="reset-search-btn">Reset Search</button>
             </div>
           </div>
         </section>

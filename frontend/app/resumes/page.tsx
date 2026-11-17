@@ -477,15 +477,30 @@ export default function ResumesPage() {
 
           {/* Error State */}
           {error && !loading && (
-            <div style={{ textAlign: "center", padding: "4rem 1rem", color: "#f87171" }}>
-              <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>⚠️</div>
-              <p style={{ fontSize: "1.1rem", marginBottom: "1rem" }}>{error}</p>
-              <button
-                className="btn btn-outline"
-                onClick={() => window.location.reload()}
-              >
-                ↺ Retry Connection
-              </button>
+            <div className="students-error-state">
+              <div className="students-error-card">
+                <div className="students-error-icon-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="30" height="30">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                </div>
+                <div className="students-error-badge">Resume Vault Alert</div>
+                <h3 className="students-error-title">Unable to Load Resumes</h3>
+                <p className="students-error-desc">{error}</p>
+                <div className="students-error-actions">
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => window.location.reload()}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" style={{ marginRight: "6px" }}>
+                      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.19"/>
+                    </svg>
+                    <span>Retry Connection</span>
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
