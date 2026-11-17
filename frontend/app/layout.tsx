@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     "A unified platform showcasing student profiles, skills, projects and achievements of the AIML 2024-2028 Batch.",
   icons: {
-    icon: "/assets/artifera_logo.jpeg",
+    icon: "/assets/web_icon.ico",
   },
 };
 

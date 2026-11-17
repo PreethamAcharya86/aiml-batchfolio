@@ -616,12 +616,11 @@ textarea {
 /* ── HERO STATS GRID ─────────────────────────────────────────── */
 .hero-stats-grid {
   display: grid;
-  grid-template-columns: 1fr 1.05fr 0.95fr 1.45fr;
-  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.15rem;
   width: 100%;
-  max-width: 1120px;
-  margin-top: 0.5rem;
-  margin-bottom: 0;
+  max-width: 900px;
+  margin: 0.5rem auto 0;
 }
 
 .stat-card {
@@ -727,14 +726,15 @@ textarea {
   margin: 0;
 }
 
-/* Resume page: frosted glass sticky search bar */
+/* Resume page: clean transparent sticky search bar */
 .resume-search-sticky {
-  background: rgba(6, 11, 20, 0.88) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border-bottom: 1px solid rgba(140, 185, 204, 0.18) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
-  pointer-events: auto !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
 }
 
 .search-wrapper {
@@ -1664,14 +1664,10 @@ textarea {
 }
 
 /* ── RESPONSIVE DESIGN ───────────────────────────────────────── */
-@media (max-width: 1100px) {
+@media (max-width: 820px) {
   .hero-stats-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-width: 720px;
-  }
-
-  .stat-card.stat-card-hod {
-    min-width: 0;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    max-width: 600px;
   }
 }
 
@@ -1825,17 +1821,18 @@ textarea {
     padding-top: 1rem;
   }
 
-  /* Resume search sticky: frosted glass background flush below 64px navbar */
+  /* Resume search sticky: clean transparent background */
   .resume-search-sticky {
     position: sticky !important;
     top: 64px !important;
     z-index: 90 !important;
     padding: 0.45rem 1rem !important;
-    background: rgba(6, 11, 20, 0.94) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border-bottom: 1px solid rgba(140, 185, 204, 0.2) !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
     box-sizing: border-box !important;
   }
 }

@@ -201,7 +201,7 @@ export default function HomePage() {
         <div className="nav-container">
           <a href="#home" className="brand-link" id="brand-logo-link" onClick={() => setIsMobileMenuOpen(false)}>
             <div className="brand-logo-wrap">
-              <img src="/assets/artifera_logo.jpeg" alt="Artifera Logo" className="nav-logo" id="nav-artifera-logo" />
+              <img src="/assets/web_icon.ico" alt="Batchfolio Logo" className="nav-logo" id="nav-artifera-logo" />
             </div>
             <div className="brand-text">
               <span className="brand-title">
@@ -597,19 +597,6 @@ export default function HomePage() {
                   <p className="stat-sub">Enrolled Students</p>
                 </div>
               </div>
-              <div className="stat-card stat-card-hod">
-                <div className="stat-icon-wrap hod-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"></path>
-                    <polyline points="10 2 10 10 13 7 16 10 16 2"></polyline>
-                  </svg>
-                </div>
-                <div className="stat-info">
-                  <span className="stat-label">HOD</span>
-                  <h3 className="stat-value">Dr. Sunil Kumar S</h3>
-                  <p className="stat-sub">Head of Department</p>
-                </div>
-              </div>
             </div>
           </div>
         </section>
@@ -728,7 +715,7 @@ export default function HomePage() {
         <div className="footer-container">
           <div className="footer-brand">
             <div className="footer-logo-row">
-              <img src="/assets/artifera_logo.jpeg" alt="Artifera Logo" className="footer-logo" />
+              <img src="/assets/web_icon.ico" alt="Batchfolio Logo" className="footer-logo" />
               <span className="footer-title">AIML Batchfolio</span>
             </div>
             <p className="footer-desc">
@@ -736,8 +723,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="footer-links-group">
-            <h4>Department Leadership</h4>
-            <p><strong>HOD:</strong> Dr. Sunil Kumar S</p>
+            <h4>Department Overview</h4>
             <p><strong>Department:</strong> AI &amp; Machine Learning</p>
             <p><strong>Strength:</strong> <span id="footer-strength">63</span> Enrolled Innovators</p>
             <p><strong>Batch:</strong> 2024 – 2028</p>

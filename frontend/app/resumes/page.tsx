@@ -162,8 +162,8 @@ export default function ResumesPage() {
           <Link href="/" className="brand-link" id="brand-logo-link" onClick={() => setIsMobileMenuOpen(false)}>
             <div className="brand-logo-wrap">
               <img
-                src="/assets/artifera_logo.jpeg"
-                alt="Artifera Logo"
+                src="/assets/web_icon.ico"
+                alt="Batchfolio Logo"
                 className="nav-logo"
               />
             </div>
@@ -697,7 +697,7 @@ export default function ResumesPage() {
         <div className="footer-container">
           <div className="footer-brand">
             <div className="footer-logo-row">
-              <img src="/assets/artifera_logo.jpeg" alt="Artifera Logo" className="footer-logo" />
+              <img src="/assets/web_icon.ico" alt="Batchfolio Logo" className="footer-logo" />
               <span className="footer-title">AIML Batchfolio</span>
             </div>
             <p className="footer-desc">

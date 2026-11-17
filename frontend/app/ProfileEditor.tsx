@@ -489,7 +489,7 @@ export default function ProfileEditor() {
         <Link href="/" className="brand-link" id="brand-logo-link" onClick={() => setIsMobileMenuOpen(false)}>
           <div className="brand-logo-wrap">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/artifera_logo.jpeg" alt="Artifera Logo" className="nav-logo" id="nav-artifera-logo" />
+            <img src="/assets/web_icon.ico" alt="Batchfolio Logo" className="nav-logo" id="nav-artifera-logo" />
           </div>
           <div className="brand-text">
             <span className="brand-title">

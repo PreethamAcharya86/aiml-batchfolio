@@ -111,7 +111,7 @@ export default function LoginModal({ onLoginSuccess }: LoginModalProps) {
 
         <div className="auth-header">
           <div className="auth-logo-badge">
-            <img src="/assets/artifera_logo.jpeg" alt="" />
+            <img src="/assets/web_icon.ico" alt="" />
           </div>
           <h2 className="auth-title" id="login-modal-title">
             Student Login
