@@ -2039,4 +2039,69 @@ textarea {
   color: #ffffff;
 }
 
+/* ── COOL SITE PRELOADER (IDENTICAL TO PROFILE LOADER WITH WEB_ICON) ── */
+.site-preloader-viewport {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  z-index: 99999;
+  background: #000000 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: auto;
+}
+
+.site-preloader-viewport.preloader-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.site-preloader-card {
+  background: rgba(10, 16, 26, 0.88) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(140, 185, 204, 0.28) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(0, 195, 255, 0.22) !important;
+  border-radius: 24px !important;
+  transform: scale(1);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.site-preloader-viewport.preloader-hidden .site-preloader-card {
+  transform: scale(0.92);
+}
+
+.site-portal-core {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.site-loader-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(0, 195, 255, 0.65));
+  animation: corePulse 1.4s ease-in-out infinite alternate;
+}
+
+.site-loader-subtitle {
+  font-size: 0.76rem;
+  color: var(--light-azure-muted, #8cb9cc);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: -0.2rem;
+  font-weight: 500;
+}
+
+
 

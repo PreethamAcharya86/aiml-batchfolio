@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import LoginModal from "./LoginModal";
 import OtpVerificationModal from "./OtpVerificationModal";
+import SiteLoader from "./SiteLoader";
 import { ApiService, clearToken, getToken, isOtpVerified } from "./lib/api.js";
 
 // Count-up animation hook
@@ -48,28 +49,40 @@ export default function HomePage() {
   const [currentUser, setCurrentUser] = useState<{ name: string; usn: string; email?: string | null; avatar?: string | null } | null>(null);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSiteLoading, setIsSiteLoading] = useState(true);
   const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    void import("./lib/batchfolio-app.js")
+    const startTime = performance.now();
+    const minDisplayMs = 700;
+
+    const initPromise = import("./lib/batchfolio-app.js")
       .then(({ initializeBatchfolioApp }) => initializeBatchfolioApp())
       .catch((error) => console.error("Failed to initialize Batchfolio:", error));
 
-    if (getToken()) {
-      void ApiService.getMyProfile()
-        .then((profile) => {
-          const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=00638E&color=FFFFFF&size=200`;
-          setCurrentUser({
-            name: profile.name,
-            usn: profile.usn,
-            email: profile.email,
-            avatar: profile.profile_picture_url || avatarFallback,
-          });
-        })
-        .catch((error) => {
-          console.error("Could not restore the logged-in student:", error);
-        });
-    }
+    const profilePromise = getToken()
+      ? ApiService.getMyProfile()
+          .then((profile) => {
+            const avatarFallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=00638E&color=FFFFFF&size=200`;
+            setCurrentUser({
+              name: profile.name,
+              usn: profile.usn,
+              email: profile.email,
+              avatar: profile.profile_picture_url || avatarFallback,
+            });
+          })
+          .catch((error) => {
+            console.error("Could not restore the logged-in student:", error);
+          })
+      : Promise.resolve();
+
+    Promise.all([initPromise, profilePromise]).finally(() => {
+      const elapsed = performance.now() - startTime;
+      const delay = Math.max(0, minDisplayMs - elapsed);
+      setTimeout(() => {
+        setIsSiteLoading(false);
+      }, delay);
+    });
 
     const handleOtpRequest = () => setIsOtpModalOpen(true);
     window.addEventListener("batchfolio:open-otp-verification", handleOtpRequest);
@@ -197,6 +210,7 @@ export default function HomePage() {
 
   return (
     <div className="theme-nordic">
+      <SiteLoader isLoading={isSiteLoading} />
       <header className="navbar" id="main-nav">
         <div className="nav-container">
           <a href="#home" className="brand-link" id="brand-logo-link" onClick={() => setIsMobileMenuOpen(false)}>

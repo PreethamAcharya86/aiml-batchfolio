@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import LoginModal from "../LoginModal";
 import OtpVerificationModal from "../OtpVerificationModal";
+import SiteLoader from "../SiteLoader";
 import { ApiService, clearToken, getToken, isOtpVerified } from "../lib/api.js";
 
 type Student = {
@@ -152,6 +153,7 @@ export default function ResumesPage() {
 
   return (
     <div className="dark-theme">
+      <SiteLoader isLoading={loading} title="Resumes Vault" subtitle="Class of 2024–2028" />
       <div className="glow-orb orb-1" />
       <div className="glow-orb orb-2" />
       <div className="glow-orb orb-3" />
