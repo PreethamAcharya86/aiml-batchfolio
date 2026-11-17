@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import LoginModal from "./LoginModal";
 import OtpVerificationModal from "./OtpVerificationModal";
-import SiteLoader from "./SiteLoader";
+import SiteLoader, { hasSiteLoaded, markSiteLoaded } from "./SiteLoader";
 import { ApiService, clearToken, getToken, isOtpVerified } from "./lib/api.js";
 
 // Count-up animation hook
@@ -49,12 +49,12 @@ export default function HomePage() {
   const [currentUser, setCurrentUser] = useState<{ name: string; usn: string; email?: string | null; avatar?: string | null } | null>(null);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSiteLoading, setIsSiteLoading] = useState(true);
+  const [isSiteLoading, setIsSiteLoading] = useState(!hasSiteLoaded());
   const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const startTime = performance.now();
-    const minDisplayMs = 700;
+    const minDisplayMs = hasSiteLoaded() ? 0 : 700;
 
     const initPromise = import("./lib/batchfolio-app.js")
       .then(({ initializeBatchfolioApp }) => initializeBatchfolioApp())
@@ -81,6 +81,7 @@ export default function HomePage() {
       const delay = Math.max(0, minDisplayMs - elapsed);
       setTimeout(() => {
         setIsSiteLoading(false);
+        markSiteLoaded();
       }, delay);
     });
 

@@ -13,6 +13,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { ApiService, clearToken, getToken, isOtpVerified, setOtpVerified } from "./lib/api.js";
+import { markSiteLoaded } from "./SiteLoader";
 
 type StudentProfile = {
   id: number;
@@ -132,6 +133,15 @@ export default function ProfileEditor() {
     setIsOtpVerifiedState(isOtpVerified());
   }, []);
 
+  // Auto-dismiss top popup notification after 4 seconds
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => {
+      setNotice("");
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [notice]);
+
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const resumeInputRef = useRef<HTMLInputElement | null>(null);
   const skillDropdownRef = useRef<HTMLDivElement | null>(null);
@@ -170,7 +180,10 @@ export default function ProfileEditor() {
         }
       })
       .finally(() => {
-        if (active) setIsLoading(false);
+        if (active) {
+          setIsLoading(false);
+          markSiteLoaded();
+        }
       });
 
     return () => {
@@ -688,6 +701,33 @@ export default function ProfileEditor() {
   return (
     <>
       {renderMobileNavbar()}
+
+      {/* Top Floating Popup Notification */}
+      {notice && (
+        <div className="profile-top-popup" role="status" aria-live="polite">
+          <div className="profile-top-popup-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="18" height="18">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <div className="profile-top-popup-content">
+            <span className="profile-top-popup-title">Profile Updated</span>
+            <span className="profile-top-popup-message">{notice}</span>
+          </div>
+          <button
+            type="button"
+            className="profile-top-popup-close"
+            onClick={() => setNotice("")}
+            aria-label="Dismiss notification"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       <main className="profile-page">
       <section className="profile-panel">
         <div className="profile-heading">
@@ -1186,11 +1226,7 @@ export default function ProfileEditor() {
               <span className="login-error-text">{error}</span>
             </div>
           )}
-          {notice && (
-            <p className="profile-success" role="status">
-              {notice}
-            </p>
-          )}
+
 
           <div style={{ display: "flex", gap: "1rem", alignItems: "center", justifyContent: "center", marginTop: "1.5rem" }}>
             <button className="btn btn-primary" disabled={isSaving} type="submit">

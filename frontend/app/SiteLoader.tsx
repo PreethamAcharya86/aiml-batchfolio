@@ -2,6 +2,16 @@
 
 import { useEffect, useState } from "react";
 
+let initialSiteLoaded = false;
+
+export function markSiteLoaded() {
+  initialSiteLoaded = true;
+}
+
+export function hasSiteLoaded() {
+  return initialSiteLoaded;
+}
+
 interface SiteLoaderProps {
   isLoading: boolean;
   title?: string;
@@ -13,18 +23,22 @@ export default function SiteLoader({
   title = "AIML Batchfolio",
   subtitle = "Class of 2024–2028",
 }: SiteLoaderProps) {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(isLoading);
   const [fading, setFading] = useState(false);
 
   useEffect(() => {
     if (!isLoading) {
+      if (!visible) return;
       setFading(true);
       const timer = setTimeout(() => {
         setVisible(false);
       }, 500);
       return () => clearTimeout(timer);
+    } else {
+      setVisible(true);
+      setFading(false);
     }
-  }, [isLoading]);
+  }, [isLoading, visible]);
 
   if (!visible) return null;
 

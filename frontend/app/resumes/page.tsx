@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import LoginModal from "../LoginModal";
 import OtpVerificationModal from "../OtpVerificationModal";
-import SiteLoader from "../SiteLoader";
+import SiteLoader, { markSiteLoaded } from "../SiteLoader";
 import { ApiService, clearToken, getToken, isOtpVerified } from "../lib/api.js";
 
 type Student = {
@@ -54,7 +54,10 @@ export default function ResumesPage() {
         setFiltered(withRes);
       })
       .catch(() => setError("Could not load resumes. Please verify connection and try again."))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        markSiteLoaded();
+      });
 
     if (getToken()) {
       void ApiService.getMyProfile()
