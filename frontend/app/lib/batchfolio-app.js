@@ -704,6 +704,8 @@ class BatchfolioApp {
     document.body.style.overflow = 'hidden';
     modalElement.classList.add('active');
     modalElement.setAttribute('aria-hidden', 'false');
+    const dialog = modalElement.querySelector('.modal-dialog');
+    if (dialog) dialog.scrollTop = 0;
   }
 
   closeModal(modalElement) {

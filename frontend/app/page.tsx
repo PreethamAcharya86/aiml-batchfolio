@@ -564,7 +564,7 @@ export default function HomePage() {
               </h1>
               <p className="hero-description">
                 A unified platform showcasing student profiles, skills, projects and achievements.
-                Empowering the AI engineers and data visionaries of the Class of 2024–2028.
+                Explore verified portfolios, technical capabilities, and resumes of the AIML Class of 2024–2028.
               </p>
             </div>
             <div className="hero-stats-grid reveal-on-scroll">
@@ -745,7 +745,7 @@ export default function HomePage() {
               <span className="footer-title">AIML Batchfolio</span>
             </div>
             <p className="footer-desc">
-              Official digital portfolio platform for the Department of Artificial Intelligence &amp; Machine Learning (Batch 2024–2028), MITE. Managed in collaboration with ARTIFERA Student Forum.
+              Official digital portfolio platform for the Department of Artificial Intelligence &amp; Machine Learning (Batch 2024–2028), MITE.
             </p>
           </div>
           <div className="footer-links-group">
@@ -776,7 +776,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2024–2028 Department of AIML, MITE &amp; ARTIFERA. All rights reserved.</p>
+          <p>&copy; 2024–2028 Department of AIML, MITE. All rights reserved.</p>
         </div>
       </footer>
     </div>

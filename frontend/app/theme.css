@@ -1283,6 +1283,13 @@ textarea {
   animation: modal-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.modal-student {
+  max-height: 84vh !important;
+  max-height: 84dvh !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
 .modal-inner-card {
   border: none !important;
   background: transparent !important;

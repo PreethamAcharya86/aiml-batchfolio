@@ -761,7 +761,7 @@ export default function ResumesPage() {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>© 2024–2028 Department of AIML, MITE &amp; ARTIFERA. All rights reserved.</p>
+          <p>© 2024–2028 Department of AIML, MITE. All rights reserved.</p>
         </div>
       </footer>
     </div>
