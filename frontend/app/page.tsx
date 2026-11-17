@@ -45,6 +45,15 @@ function CountUpStat({ target }: { target: number }) {
   return <span ref={ref} className="stat-counter-animated">{value}</span>;
 }
 
+const CONTRIBUTORS = [
+  { name: "Alok M Poojary", image: "/assets/Alok%20M%20Poojary.webp" },
+  { name: "Lakshmeesha", image: "/assets/Lakshmeesha.webp" },
+  { name: "Mohammed Fayaz", image: "/assets/Mohammed%20Fayaz.webp" },
+  { name: "Preetham Acharya", image: "/assets/Preetham%20Acharya.webp" },
+  { name: "Rachith R Amin", image: "/assets/Rachith%20R%20Amin.webp" },
+  { name: "Seemanth UK", image: "/assets/Seemanth%20UK.webp" },
+];
+
 export default function HomePage() {
   const [currentUser, setCurrentUser] = useState<{ name: string; usn: string; email?: string | null; avatar?: string | null } | null>(null);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
@@ -671,6 +680,39 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* ── PROJECT CONTRIBUTORS SECTION ── */}
+        <section className="contributors-section" id="contributors">
+          <div className="contributors-container">
+            <div className="contributors-header">
+              <span className="contributors-badge">Batchfolio Team</span>
+              <h3 className="contributors-title">Project Contributors</h3>
+              <p className="contributors-subtitle">
+                The team behind the vision, architecture, and development of AIML Batchfolio.
+              </p>
+            </div>
+            <div className="contributors-grid">
+              {CONTRIBUTORS.map((c) => (
+                <div key={c.name} className="contributor-card">
+                  <div className="contributor-avatar-wrap">
+                    <img
+                      src={c.image}
+                      alt={c.name}
+                      className="contributor-avatar-img"
+                      loading="lazy"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.onerror = null;
+                        target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=00638E&color=FFFFFF&size=120`;
+                      }}
+                    />
+                  </div>
+                  <span className="contributor-name">{c.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
 
       <div className="modal-backdrop" id="student-modal" aria-hidden="true" role="dialog">
@@ -759,6 +801,7 @@ export default function HomePage() {
             <ul>
               <li><a href="#home">Home Portal</a></li>
               <li><a href="#search-section">Search Students</a></li>
+              <li><a href="#contributors">Contributors</a></li>
               <li><Link href="/resumes" id="footer-resumes-link">Resume Vault</Link></li>
               <li>
                 <a
