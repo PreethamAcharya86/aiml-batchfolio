@@ -269,6 +269,7 @@ export const ApiService = {
     }
     const rows = await res.json();
     const students = Array.isArray(rows) ? rows.map(normalizeStudent) : [];
+    students.sort((a, b) => (a.usn || '').localeCompare(b.usn || '', undefined, { numeric: true, sensitivity: 'base' }));
     if (students.length > 0) {
       setCachedStudents(students);
     }

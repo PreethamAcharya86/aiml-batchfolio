@@ -28,6 +28,7 @@ export default function ResumesPage() {
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [modalIframeLoaded, setModalIframeLoaded] = useState(false);
+  const [mobileViewerMode, setMobileViewerMode] = useState<"direct" | "google">("direct");
 
   useEffect(() => {
     const checkMobile = () => {
@@ -43,13 +44,21 @@ export default function ResumesPage() {
 
   useEffect(() => {
     setModalIframeLoaded(false);
-  }, [activeResumeStudent]);
+    if (activeResumeStudent) {
+      // Auto-hide loading state after 3.5 seconds so mobile users are never blocked
+      const timer = setTimeout(() => {
+        setModalIframeLoaded(true);
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [activeResumeStudent, mobileViewerMode]);
 
   useEffect(() => {
     ApiService.getStudents()
       .then((all: Student[]) => {
-        setAllStudents(all);
-        const withRes = all.filter((s) => s.resumeUrl);
+        const sorted = all.slice().sort((a, b) => (a.usn || "").localeCompare(b.usn || "", undefined, { numeric: true, sensitivity: "base" }));
+        setAllStudents(sorted);
+        const withRes = sorted.filter((s) => s.resumeUrl);
         setStudentsWithResume(withRes);
         setFiltered(withRes);
       })
@@ -658,37 +667,63 @@ export default function ResumesPage() {
                     activeResumeStudent.resumeUrl.includes("localhost") ||
                     activeResumeStudent.resumeUrl.includes("127.0.0.1")
                   );
-                  const pdfSrc = isMobileDevice && !isLocal
-                    ? `https://docs.google.com/viewer?url=${encodeURIComponent(activeResumeStudent.resumeUrl)}&embedded=true`
+                  // Dynamic viewer based on mode
+                  const pdfSrc = isMobileDevice
+                    ? (mobileViewerMode === "google" && !isLocal
+                        ? `https://docs.google.com/viewer?url=${encodeURIComponent(activeResumeStudent.resumeUrl)}&embedded=true`
+                        : `${activeResumeStudent.resumeUrl}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`)
                     : `${activeResumeStudent.resumeUrl}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`;
 
                   return (
                     <>
-                      {!modalIframeLoaded && (
-                        <div className="resume-modal-loading">
-                          <div className="spinner-core" style={{ width: "26px", height: "26px" }} />
-                          <span>Loading document preview...</span>
-                        </div>
-                      )}
                       {isMobileDevice && (
                         <div className="mobile-pdf-notice">
-                          <span>Interactive mobile preview</span>
+                          <div className="mobile-pdf-notice-info">
+                            <span className="mobile-pdf-status-badge">PDF DOCUMENT</span>
+                            {!isLocal && (
+                              <button
+                                type="button"
+                                className="mobile-pdf-toggle-btn"
+                                onClick={() => {
+                                  setModalIframeLoaded(false);
+                                  setMobileViewerMode(mobileViewerMode === "direct" ? "google" : "direct");
+                                }}
+                              >
+                                {mobileViewerMode === "direct" ? "Switch to Google Viewer" : "Switch to Direct PDF"}
+                              </button>
+                            )}
+                          </div>
                           <a
                             href={activeResumeStudent.resumeUrl}
                             target="_blank"
-                            rel="noreferrer"
+                            rel="noopener noreferrer"
                             className="mobile-pdf-notice-link"
                           >
                             Open Full PDF ↗
                           </a>
                         </div>
                       )}
+                      {!modalIframeLoaded && (
+                        <div className="resume-modal-loading">
+                          <div className="spinner-core" style={{ width: "26px", height: "26px" }} />
+                          <span>Loading document preview...</span>
+                          <a
+                            href={activeResumeStudent.resumeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mobile-pdf-loading-fallback-link"
+                          >
+                            Taking long? Tap to Open Full PDF ↗
+                          </a>
+                        </div>
+                      )}
                       <iframe
-                        key={pdfSrc}
+                        key={`${pdfSrc}-${mobileViewerMode}`}
                         src={pdfSrc}
                         title={`${activeResumeStudent.fullName} Verified Resume`}
-                        className="resume-modal-iframe"
+                        className={`resume-modal-iframe${isMobileDevice ? " resume-modal-iframe-mobile" : ""}`}
                         onLoad={() => setModalIframeLoaded(true)}
+                        allow="fullscreen"
                       />
                     </>
                   );

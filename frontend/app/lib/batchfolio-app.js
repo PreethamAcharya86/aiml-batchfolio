@@ -55,6 +55,8 @@ class BatchfolioApp {
     const cached = !forceRefresh && ApiService.getCachedStudents ? ApiService.getCachedStudents() : null;
     if (cached && cached.length > 0) {
       this.students = cached;
+      // Sort cached students by USN numerically
+      this.students.sort((a, b) => a.usn.localeCompare(b.usn, undefined, { numeric: true, sensitivity: 'base' }));
       this.filteredStudents = [...this.students];
       if (this.totalCountEl) this.totalCountEl.textContent = this.students.length;
       if (this.strengthCounterEl) this.strengthCounterEl.textContent = this.students.length;
@@ -74,6 +76,8 @@ class BatchfolioApp {
 
     try {
       this.students = await ApiService.getStudents(forceRefresh);
+      // Sort students by USN numerically (4MT24AI001 → 4MT25AI400)
+      this.students.sort((a, b) => a.usn.localeCompare(b.usn, undefined, { numeric: true, sensitivity: 'base' }));
       this.filteredStudents = [...this.students];
       if (this.totalCountEl) this.totalCountEl.textContent = this.students.length;
       if (this.strengthCounterEl) this.strengthCounterEl.textContent = this.students.length;
@@ -411,14 +415,14 @@ class BatchfolioApp {
     this.studentsGrid.innerHTML = this.filteredStudents.map(student => `
       <article class="student-card" data-usn="${student.usn}" tabindex="0" role="button" aria-label="View profile of ${student.fullName}">
         
-        <!-- Hover Blur Overlay with Click Indication -->
-        <div class="card-hover-overlay">
-          <div class="card-hover-cue-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <!-- View Profile Hover Cue (centered pill badge) -->
+        <div class="card-view-cue">
+          <div class="card-view-cue-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
               <circle cx="12" cy="12" r="3"></circle>
             </svg>
-            <span>View Profile</span>
+            Preview
           </div>
         </div>
 
@@ -431,17 +435,13 @@ class BatchfolioApp {
             loading="lazy"
             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}&background=00638E&color=FFFFFF&size=150';"
           >
-          <span class="avatar-badge-branch">${student.branch}</span>
         </div>
 
         <!-- Student Info -->
         <div class="card-info">
           <h3 class="card-name">${student.fullName}</h3>
           <span class="card-usn-badge">${student.usn}</span>
-          <p class="card-role">${student.role}</p>
-
-          <!-- Student Bio (one-line truncation with ..., hidden if no bio) -->
-          ${student.bio && student.bio.trim() ? `<p class="card-bio">${student.bio.trim()}</p>` : ''}
+          ${student.role ? `<p class="card-role">${student.role}</p>` : ''}
         </div>
 
       </article>
@@ -514,8 +514,9 @@ class BatchfolioApp {
           <h2 class="enlarged-name">${student.fullName}</h2>
           <div class="enlarged-usn-row">
             <span class="enlarged-usn-pill">${student.usn}</span>
+            <span class="enlarged-batch-badge">Class of 2024–2028</span>
           </div>
-          <div class="enlarged-role">${student.role}</div>
+          <div class="enlarged-role">${student.role || 'AIML Student'}</div>
         </div>
       </div>
 
@@ -528,62 +529,82 @@ class BatchfolioApp {
           </div>
           <p class="enlarged-bio">${student.bio.trim()}</p>
         </div>
-      ` : ''}
+      ` : `
+        <div class="modal-section-block">
+          <div class="modal-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Professional Summary
+          </div>
+          <p class="modal-empty-note">✦ Professional summary yet to be added.</p>
+        </div>
+      `}
 
       <!-- Technical Skills Cloud -->
-      <div class="modal-section-block">
-        <div class="modal-section-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          Core Technologies & Skills
+      ${student.skills && student.skills.length > 0 ? `
+        <div class="modal-section-block">
+          <div class="modal-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Core Technologies & Skills
+          </div>
+          <div class="enlarged-skills-cloud">
+            ${student.skills.map(skill => `<span class="enlarged-skill-item">${skill}</span>`).join('')}
+          </div>
         </div>
-        <div class="enlarged-skills-cloud">
-          ${student.skills.map(skill => `<span class="enlarged-skill-item">${skill}</span>`).join('')}
+      ` : `
+        <div class="modal-section-block">
+          <div class="modal-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Core Technologies &amp; Skills
+          </div>
+          <p class="modal-empty-note">✦ Skills yet to be added.</p>
         </div>
-      </div>
+      `}
 
       <!-- Featured Projects -->
-      <div class="modal-section-block">
-        <div class="modal-section-title">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          Featured Academic & Industry Projects
-        </div>
-        <div class="modal-projects-grid">
-          ${student.projects.length ? student.projects.map(proj => `
-            <div class="project-card-mini">
-              <h4>${proj.title}</h4>
-              <p>${proj.description}</p>
-              <div class="project-tech-tags">
-                ${proj.tech.map(t => `<span class="tech-tag-mini">${t}</span>`).join('')}
+      ${student.projects && student.projects.length > 0 ? `
+        <div class="modal-section-block">
+          <div class="modal-section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Featured Academic & Industry Projects
+          </div>
+          <div class="modal-projects-grid">
+            ${student.projects.map(proj => `
+              <div class="project-card-mini">
+                <h4>${proj.title}</h4>
+                <p>${proj.description}</p>
+                <div class="project-tech-tags">
+                  ${proj.tech.map(t => `<span class="tech-tag-mini">${t}</span>`).join('')}
+                </div>
               </div>
-            </div>
-          `).join('') : '<p class="enlarged-bio">No projects have been added yet.</p>'}
+            `).join('')}
+          </div>
         </div>
-      </div>
+      ` : ''}
 
       <!-- Social & Resume Actions -->
       <div class="enlarged-actions-row">
         <div class="social-links-group">
-          ${student.social.portfolio ? `
-            <a href="${student.social.portfolio}" target="_blank" rel="noopener" class="social-btn" title="Portfolio Website">
+          ${student.social?.portfolio ? `
+            <a href="${student.social.portfolio}" target="_blank" rel="noopener noreferrer" class="social-btn" title="Portfolio Website">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
             </a>
           ` : ''}
-          ${student.social.github ? `
-            <a href="${student.social.github}" target="_blank" rel="noopener" class="social-btn" title="GitHub Profile">
+          ${student.social?.github ? `
+            <a href="${student.social.github}" target="_blank" rel="noopener noreferrer" class="social-btn" title="GitHub Profile">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
             </a>
           ` : ''}
-          ${student.social.linkedin ? `
-            <a href="${student.social.linkedin}" target="_blank" rel="noopener" class="social-btn" title="LinkedIn Profile">
+          ${student.social?.linkedin ? `
+            <a href="${student.social.linkedin}" target="_blank" rel="noopener noreferrer" class="social-btn" title="LinkedIn Profile">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
             </a>
           ` : ''}
-          ${student.social.instagram ? `
-            <a href="${student.social.instagram}" target="_blank" rel="noopener" class="social-btn" title="Instagram Profile">
+          ${student.social?.instagram ? `
+            <a href="${student.social.instagram}" target="_blank" rel="noopener noreferrer" class="social-btn" title="Instagram Profile">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
             </a>
           ` : ''}
-          ${student.social.email ? `
+          ${student.social?.email ? `
             <a href="mailto:${student.social.email}" class="social-btn" title="Email Student">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             </a>
@@ -600,10 +621,20 @@ class BatchfolioApp {
               <span>Edit Profile</span>
             </button>
           ` : ''}
-          <button class="btn btn-primary" onclick="window.batchfolioApp.downloadResume('${student.usn}', '${student.fullName}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            <span>Download Resume</span>
-          </button>
+          ${student.resumeUrl ? `
+            <a href="${student.resumeUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary enlarged-resume-btn" title="Open resume in new tab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              <span>View Resume</span>
+            </a>
+          ` : `
+            <span class="modal-no-resume-note">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+              Resume not yet uploaded
+            </span>
+          `}
         </div>
       </div>
     `;
@@ -668,15 +699,18 @@ class BatchfolioApp {
    * Modal Management Helpers
    */
   openModal(modalElement) {
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.paddingRight = scrollbarWidth + 'px';
+    document.body.style.overflow = 'hidden';
     modalElement.classList.add('active');
     modalElement.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
   }
 
   closeModal(modalElement) {
     modalElement.classList.remove('active');
     modalElement.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
   }
 
   /**
