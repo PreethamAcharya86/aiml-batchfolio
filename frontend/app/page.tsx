@@ -50,7 +50,6 @@ const CONTRIBUTORS = [
   { name: "Lakshmeesha", image: "/assets/Lakshmeesha.webp" },
   { name: "Mohammed Fayaz", image: "/assets/Mohammed%20Fayaz.webp" },
   { name: "Preetham Acharya", image: "/assets/Preetham%20Acharya.webp" },
-  { name: "Rachith R Amin", image: "/assets/Rachith%20R%20Amin.webp" },
   { name: "Seemanth UK", image: "/assets/Seemanth%20UK.webp" },
 ];
 
