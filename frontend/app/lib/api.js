@@ -9,28 +9,52 @@ const configuredApiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
 
 
 const API_BASE = (configuredApiBase || 'http://127.0.0.1:8001/api').replace(/\/+$/, '');
-const TIMEOUT_MS = 10000;
+// 75-second timeout to seamlessly handle Render free-tier cold-starts (~30-55s) without aborting
+const TIMEOUT_MS = 75000;
 
-// ── Internal: fetch with timeout ──────────────────────────────────────────────
-async function apiFetch(path, options = {}) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  try {
-    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
-    const defaultHeaders = isFormData ? {} : { 'Content-Type': 'application/json' };
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...options,
-      signal: controller.signal,
-      headers: {
-        ...defaultHeaders,
-        ...options.headers,
-      },
-    });
-    clearTimeout(timer);
-    return res;
-  } catch (err) {
-    clearTimeout(timer);
-    throw err;
+// ── Internal: fetch with timeout & Render cold-start auto-retry ───────────────
+async function apiFetch(path, options = {}, retries = 2) {
+  const timeoutMs = options.timeout || TIMEOUT_MS;
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+  const defaultHeaders = isFormData ? {} : { 'Content-Type': 'application/json' };
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(`${API_BASE}${path}`, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          ...defaultHeaders,
+          ...options.headers,
+        },
+      });
+      clearTimeout(timer);
+
+      // Render cold start can transiently return 502/503/504 while booting the container
+      if ((res.status === 502 || res.status === 503 || res.status === 504) && attempt < retries) {
+        console.warn(`Render server waking up (HTTP ${res.status}). Retrying attempt ${attempt + 1}/${retries}...`);
+        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+        continue;
+      }
+
+      return res;
+    } catch (err) {
+      clearTimeout(timer);
+      const isAbortOrNetwork =
+        err.name === 'AbortError' ||
+        err.message?.includes('Failed to fetch') ||
+        err.message?.includes('NetworkError') ||
+        err.message?.includes('network');
+
+      if (attempt < retries && isAbortOrNetwork) {
+        console.warn(`Connection attempt ${attempt + 1} failed (${err.message}). Retrying in 2s...`);
+        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+        continue;
+      }
+      throw err;
+    }
   }
 }
 

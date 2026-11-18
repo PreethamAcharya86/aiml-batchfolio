@@ -66,16 +66,102 @@ class BatchfolioApp {
       return;
     }
 
-    this.studentsGrid.innerHTML = `
-      <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
-        <div style="font-size: 2rem; margin-bottom: 1rem;">⏳</div>
-        <div style="font-size: 1.05rem; color: #94a3b8; margin-bottom: 0.5rem;">Loading AIML 2024-2028 Student Portfolios...</div>
-        <div style="font-size: 0.85rem; color: #64748b;">Connecting to backend...</div>
-      </div>
-    `;
+    // Set up interactive loading state with live numeric percentage & server spin-up messages
+    let loadPercent = 5;
+    let progressTimer = null;
+
+    const getStatusText = (val) => {
+      if (val < 20) return "Initializing Batchfolio environment...";
+      if (val < 45) return "Connecting to cloud backend...";
+      if (val < 72) return "Waking up server instance (Render spin-up)...";
+      if (val < 94) return "Retrieving verified student portfolios...";
+      return "Ready! Rendering student cards...";
+    };
+
+    const radius = 40;
+    const circumference = 2 * Math.PI * radius; // ~251.33
+
+    const updateGridLoader = (pct) => {
+      if (!this.studentsGrid) return;
+      const status = getStatusText(pct);
+      const offset = (circumference - (pct / 100) * circumference).toFixed(2);
+      this.studentsGrid.innerHTML = `
+        <div class="grid-interactive-loader-wrap" style="grid-column: 1 / -1; width: 100%; display: flex; justify-content: center; padding: 2rem 1rem;">
+          <div class="students-loading-view">
+            <!-- Circular Percentage Loader (Mathematically Centered SVG Text & Arc) -->
+            <div class="circular-loader-container">
+              <svg class="circular-loader-svg" viewBox="0 0 100 100" width="124" height="124">
+                <defs>
+                  <linearGradient id="circleProgressGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00638E" />
+                    <stop offset="50%" stop-color="#06b6d4" />
+                    <stop offset="100%" stop-color="#67e8f9" />
+                  </linearGradient>
+                </defs>
+                <!-- Background track circle -->
+                <circle
+                  class="circular-loader-bg"
+                  cx="50"
+                  cy="50"
+                  r="40"
+                />
+                <!-- Foreground animated stroke circle, starts at 12 o'clock -->
+                <circle
+                  class="circular-loader-bar"
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  transform="rotate(-90 50 50)"
+                  style="stroke-dasharray: 251.33; stroke-dashoffset: ${offset};"
+                />
+                <!-- Centered percentage numbers in SVG coordinates -->
+                <text
+                  x="50"
+                  y="52"
+                  text-anchor="middle"
+                  dominant-baseline="central"
+                  class="circular-loader-svg-text"
+                >
+                  <tspan class="circular-loader-svg-num">${pct}</tspan><tspan class="circular-loader-svg-sym" dx="1.5" dy="-6">%</tspan>
+                </text>
+              </svg>
+            </div>
+
+            <div class="loader-title" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.2rem;">Loading Student Profiles</div>
+            <div class="site-loader-subtitle" style="margin-bottom: 1.15rem;">AIML Class of 2024–2028</div>
+
+            <!-- Dynamic Status Pill -->
+            <div class="site-loader-status-pill">
+              <span class="status-indicator-dot"></span>
+              <span class="status-indicator-text">${status}</span>
+            </div>
+
+            ${pct >= 35 ? `
+              <p class="loader-server-notice" style="margin-top: 0.75rem;">
+                Free-tier cloud backend is waking up — loading student profiles automatically.
+              </p>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    };
+
+    updateGridLoader(loadPercent);
+
+    progressTimer = setInterval(() => {
+      if (loadPercent < 94) {
+        const step = loadPercent < 20 ? 3 : loadPercent < 45 ? 2 : loadPercent < 70 ? 1 : 1;
+        loadPercent = Math.min(94, loadPercent + step);
+        updateGridLoader(loadPercent);
+      }
+    }, 380);
 
     try {
       this.students = await ApiService.getStudents(forceRefresh);
+      clearInterval(progressTimer);
+      updateGridLoader(100);
+      await new Promise(r => setTimeout(r, 220));
+
       // Sort students by USN numerically (4MT24AI001 → 4MT25AI400)
       this.students.sort((a, b) => a.usn.localeCompare(b.usn, undefined, { numeric: true, sensitivity: 'base' }));
       this.filteredStudents = [...this.students];
@@ -97,6 +183,7 @@ class BatchfolioApp {
       this.renderStudents();
       this.renderResumesList();
     } catch (err) {
+      clearInterval(progressTimer);
       console.error('Failed to load students:', err);
       this.studentsGrid.innerHTML = `
         <div class="students-error-state" style="grid-column: 1 / -1;">
@@ -705,7 +792,12 @@ class BatchfolioApp {
     modalElement.classList.add('active');
     modalElement.setAttribute('aria-hidden', 'false');
     const dialog = modalElement.querySelector('.modal-dialog');
-    if (dialog) dialog.scrollTop = 0;
+    if (dialog) {
+      dialog.scrollTop = 0;
+      requestAnimationFrame(() => {
+        dialog.scrollTop = 0;
+      });
+    }
   }
 
   closeModal(modalElement) {

@@ -18,11 +18,7 @@ interface SiteLoaderProps {
   subtitle?: string;
 }
 
-export default function SiteLoader({
-  isLoading,
-  title = "AIML Batchfolio",
-  subtitle = "Class of 2024–2028",
-}: SiteLoaderProps) {
+export default function SiteLoader({ isLoading }: SiteLoaderProps) {
   const [visible, setVisible] = useState(isLoading);
   const [fading, setFading] = useState(false);
 
@@ -48,7 +44,8 @@ export default function SiteLoader({
       role="status"
       aria-label="Loading Portal"
     >
-      <div className="profile-loader-card site-preloader-card">
+      {/* Only the web_icon and surrounding load animation — no square box */}
+      <div className="site-portal-loader-wrap">
         <div className="loader-portal">
           <div className="portal-ring ring-outer"></div>
           <div className="portal-ring ring-inner"></div>
@@ -58,13 +55,6 @@ export default function SiteLoader({
               alt="AIML Batchfolio"
               className="site-loader-icon"
             />
-          </div>
-        </div>
-        <div className="loader-text-box">
-          <div className="loader-title">{title}</div>
-          <div className="site-loader-subtitle">{subtitle}</div>
-          <div className="loader-progress-track">
-            <div className="loader-progress-bar"></div>
           </div>
         </div>
       </div>

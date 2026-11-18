@@ -85,14 +85,14 @@ export default function HomePage() {
           })
       : Promise.resolve();
 
-    Promise.all([initPromise, profilePromise]).finally(() => {
-      const elapsed = performance.now() - startTime;
-      const delay = Math.max(0, minDisplayMs - elapsed);
-      setTimeout(() => {
-        setIsSiteLoading(false);
-        markSiteLoaded();
-      }, delay);
-    });
+    // Show clean icon splash loader briefly on first visit / refresh, then reveal page
+    // so the student cards section can display its interactive percentage loader!
+    const elapsed = performance.now() - startTime;
+    const delay = Math.max(0, minDisplayMs - elapsed);
+    setTimeout(() => {
+      setIsSiteLoading(false);
+      markSiteLoaded();
+    }, delay);
 
     const handleOtpRequest = () => setIsOtpModalOpen(true);
     window.addEventListener("batchfolio:open-otp-verification", handleOtpRequest);
@@ -666,7 +666,7 @@ export default function HomePage() {
                 <div className="no-results-badge">Directory Search</div>
                 <h3 className="no-results-title">No Matching Students Found</h3>
                 <p className="no-results-desc">
-                  We couldn&apos;t find any student profile matching your query. Try searching by USN (e.g. <code>4MT24AI001</code>), full name, or clear your search term.
+                  We couldn&apos;t find any student profile matching your query.
                 </p>
                 <div className="no-results-actions">
                   <button className="btn btn-outline" id="reset-search-btn">
