@@ -1282,7 +1282,15 @@ textarea {
   border-radius: 18px !important;
   box-shadow: var(--shadow-modal) !important;
   color: var(--paper-white);
-  animation: modal-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: modal-pop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* On mobile the bottom-sheet uses a pure slide-up — disable the scale pop animation */
+@media (max-width: 600px) {
+  .modal-student,
+  .modal-dialog.modal-student {
+    animation: none !important;
+  }
 }
 
 .modal-student {
